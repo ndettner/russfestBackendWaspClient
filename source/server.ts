@@ -64,7 +64,7 @@ class Server {
         });
 
         this.app.use("/api/user", this.userController.router);
-        this.app.use("/api/user", this.walletController.router) //Configure the new routes of the controller register
+        this.app.use("/api/wallet", this.walletController.router) //Configure the new routes of the controller register
     }
 
     private initializeErrorHandling(){
