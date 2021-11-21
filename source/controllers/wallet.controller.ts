@@ -1,51 +1,44 @@
 import { Request, Response, Router } from "express";
 import { WalletService } from "../service/wallet.service";
-import { Base58, BasicClient, Seed } from "../wasp_client";
-import * as crypto from "crypto";
-import * as numberGenerator from "number-generator";
-import { Buffer } from "../wasp_client/buffer";
-import { WaspHelpers } from "../wasp_client_helper";
+import { Base58, IKeyPair } from "../wasp_client";
+import { Buffer } from "../wasp_client/buffer"
 
 export class WalletController {
     public router: Router;
     private walletService: WalletService;
-    private waspHelpers: WaspHelpers;
 
     constructor() {
         this.walletService = new WalletService();
-        this.waspHelpers = new WaspHelpers();
         this.router = Router();
         this.routes();
     }
 
     private routes() {
-        this.router.get("/getOrConnectWallet", this.getOrConnectWallet);
+        this.router.get("/validateWallet", this.validateWallet);
+        this.router.get("/generateNewWallet", this.generateNewWallet)
         this.router.post("/balance", this.balance);
-
-
     }
-    public getOrConnectWallet = async (req: Request, res: Response) => {
 
-       
+    public generateNewWallet = async (req: Request, res: Response) => {
+        // TODO look how to handle json proper
+        const userID: number = 2;
+        const walletSeed: Buffer = this.walletService.generateNewSeed(userID);
+        console.log(walletSeed);
+        const address: string = this.walletService.generateAddress(walletSeed, 0)
+        const keyPair: IKeyPair = this.walletService.generateKeyPair(walletSeed, 0)
+        this.walletService.requestFaucetFunds(Base58.encode(walletSeed), address, keyPair);
+        res.send(walletSeed);
+    }
+    public validateWallet = async (req: Request, res: Response) => {
+        // TODO look how to handle json proper
+        const walletKey: string = req.body
+        const isValid: boolean = this.walletService.validateWallet(walletKey);
 
-        
-        
-        const array = this.waspHelpers.generateSeed(2);
-
-        let baseseed = Base58.encode(Buffer.from(array));
-
-        
-
-        console.log("Initializin wallet");
-        let seed: string = "oVJ6qTRjUS5zRcnPnzCXCtTPBZiM5vxfxA8xQjaxQLw";
-        if (Base58.isValid(baseseed)) {
-            res.send(baseseed.toString());
+        if (isValid) {
+            res.send("Your Key is valid")
         } else {
-            res.send("Not Valid")
+            res.send("Your Key is not valid")
         }
-
-
-
     }
     balance() {
         throw new Error("Method not implemented.");

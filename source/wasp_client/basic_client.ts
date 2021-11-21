@@ -22,7 +22,7 @@ export interface IExtendedResponse<U> {
 export interface BasicClientConfiguration {
   WaspAPIUrl: string;
   GoShimmerAPIUrl: string;
-  SeedUnsafe: Buffer;
+  // Don't need this SeedUnsafe: Buffer;
 }
 
 export interface CallViewResponse extends IResponse {
