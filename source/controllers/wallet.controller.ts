@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { WalletService } from "../service/wallet.service";
-import { Base58, IKeyPair } from "../wasp_client";
+import { Base58, IFaucetRequestContext, IKeyPair } from "../wasp_client";
 import { Buffer } from "../wasp_client/buffer"
 
 export class WalletController {
@@ -20,17 +20,18 @@ export class WalletController {
     }
 
     public generateNewWallet = async (req: Request, res: Response) => {
-        // TODO look how to handle json proper
         const userID: number = 2;
         const walletSeed: Buffer = this.walletService.generateNewSeed(userID);
-        console.log(walletSeed);
         const address: string = this.walletService.generateAddress(walletSeed, 0)
+        console.log(address)
         const keyPair: IKeyPair = this.walletService.generateKeyPair(walletSeed, 0)
-        this.walletService.requestFaucetFunds(Base58.encode(walletSeed), address, keyPair);
+        const faucetRequestResult: IFaucetRequestContext = await this.walletService.requestFaucetFunds(address);
+
+
+
         res.send(walletSeed);
     }
     public validateWallet = async (req: Request, res: Response) => {
-        // TODO look how to handle json proper
         const walletKey: string = req.body
         const isValid: boolean = this.walletService.validateWallet(walletKey);
 

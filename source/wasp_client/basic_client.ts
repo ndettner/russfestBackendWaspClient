@@ -1,5 +1,4 @@
 import { IFaucetRequest, IOffLedger, OffLedger } from './binary_models';
-import type { Buffer } from './buffer';
 
 import type {
   IAllowedManaPledgeResponse,
@@ -136,14 +135,14 @@ export class BasicClient {
       if (verb == 'get' || verb == 'delete') {
         fetchResponse = await fetch(`${url}/${path}`, {
           method: verb,
-          headers,
-        });
+          headers
+        }).then();
       } else if (verb == 'post' || verb == 'put') {
         fetchResponse = await fetch(`${url}/${path}`, {
           method: verb,
           headers,
           body: JSON.stringify(request),
-        });
+        }).then();
       }
 
       if (!fetchResponse) {

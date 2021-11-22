@@ -2,10 +2,12 @@ import { Base58, BasicClient, Faucet, IAllowedManaPledgeResponse, IFaucetRequest
 import { WaspHelpers } from "../wasp_client_helper";
 import { Buffer } from "../wasp_client/buffer"
 import * as config from "../config.dev";
+import { v4 as uuidv4 } from 'uuid';
+import ProofOfWork from "../wasp_client/proof_of_work";
 
 export class WalletService {
     private waspHelpers: WaspHelpers;
-    private basicClient: BasicClient
+    private basicClient: BasicClient;
 
     constructor() {
         this.waspHelpers = new WaspHelpers();
@@ -44,9 +46,9 @@ export class WalletService {
         return Seed.generateKeyPair(newSeed, userNameIndex);
     }
 
-    public async requestFaucetFunds(walletSeed: string, address: string, keyPair: IKeyPair) {
+    public async requestFaucetFunds(address: string) {
         // getManaPledge this.waspHelpers.
-        const manaPledge: IAllowedManaPledgeResponse = await this.basicClient.getAllowedManaPledge()
+        const manaPledge: IAllowedManaPledgeResponse = await this.waspHelpers.getAllowedManaPledge()
 
         const allowedManagePledge = manaPledge.accessMana.allowed[0];
         const consenseusManaPledge = manaPledge.consensusMana.allowed[0];
@@ -60,13 +62,21 @@ export class WalletService {
 
         const powBuffer = Faucet.ToBuffer(body);
 
-        const result: IFaucetRequestContext = {
+        const faucetRequestResult: IFaucetRequestContext = {
             poWBuffer: powBuffer,
             faucetRequest: body,
         };
 
-        return result;
+        faucetRequestResult.faucetRequest.nonce = ProofOfWork.calculateProofOfWork(12, faucetRequestResult.poWBuffer)
+
+        try {
+            await this.waspHelpers.sendFaucetRequest(faucetRequestResult.faucetRequest);
+        } catch {
+        }
+
+        return faucetRequestResult;
 
 
     }
+
 }
