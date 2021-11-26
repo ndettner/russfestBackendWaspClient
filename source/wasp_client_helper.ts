@@ -1,9 +1,10 @@
 import { IAllowedManaPledgeResponse, Seed } from "./wasp_client"
 import { Buffer } from "./wasp_client/buffer"
 import { aleaRNGFactory } from "number-generator";
-import fetch from "node-fetch";
 import { IFaucetRequest } from "./wasp_client/binary_models";
+import fetch = require('node-fetch'); 
 export class WaspHelpers {
+   
     headers: { [id: string]: string };
 
 
@@ -32,24 +33,20 @@ export class WaspHelpers {
             'Content-Type': 'application/json',
         };
         let response: IAllowedManaPledgeResponse;
-        try {
-            const fetchresponse = await fetch(`${process.env.GOSHIMMERAPI}/mana/allowedManaPledge`, { method: "get", headers: this.headers });
-            // use Axios for http requests
-            response = await fetchresponse.json();
-            console.log(response);
-        } catch {
-
-        }
-
+        const fetchresponse = await fetch(`${process.env.GOSHIMMERAPI}/mana/allowedManaPledge`, { method: "get", headers: this.headers });
+        response = await fetchresponse.json();
         return response;
 
     }
 
     public async sendFaucetRequest(faucetRequest: IFaucetRequest) {
+        // TODO try catch bzw then catch for fetch?
         let fetchresponse: Response = await fetch(`${process.env.GOSHIMMERAPI}/faucet`, { method: "post", headers: this.headers, body: JSON.stringify(faucetRequest) });
         const response = await fetchresponse.json();
-        console.log(response);
+    }
 
+    public async getUnspentOutputs() {
+        throw new Error("Method not implemented.");
     }
 
 

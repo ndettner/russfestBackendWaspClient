@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { WalletService } from "../service/wallet.service";
-import { Base58, IFaucetRequestContext, IKeyPair } from "../wasp_client";
+import { Base58, BasicClient, Colors, IFaucetRequestContext, IKeyPair } from "../wasp_client";
 import { Buffer } from "../wasp_client/buffer"
 
 export class WalletController {
@@ -14,34 +14,41 @@ export class WalletController {
     }
 
     private routes() {
-        this.router.get("/validateWallet", this.validateWallet);
-        this.router.get("/generateNewWallet", this.generateNewWallet)
+        this.router.post("/validateSeed", this.validateSeed);
+        this.router.post("/generateNewWallet", this.generateNewWallet)
         this.router.post("/balance", this.balance);
     }
 
     public generateNewWallet = async (req: Request, res: Response) => {
-        const userID: number = 2;
+        const userID: number = req.body["hash"];
         const walletSeed: Buffer = this.walletService.generateNewSeed(userID);
-        const address: string = this.walletService.generateAddress(walletSeed, 0)
-        console.log(address)
-        const keyPair: IKeyPair = this.walletService.generateKeyPair(walletSeed, 0)
+        const address: string = this.walletService.generateAddress(walletSeed, userID)
+        const keyPair: IKeyPair = this.walletService.generateKeyPair(walletSeed, userID)
         const faucetRequestResult: IFaucetRequestContext = await this.walletService.requestFaucetFunds(address);
 
-
-
-        res.send(walletSeed);
+        let returnJSON = {
+            "seed": Base58.encode(walletSeed),
+            "address": address,
+            "publicKey": Base58.encode(keyPair.publicKey),
+            "secretKey": Base58.encode(keyPair.secretKey)
+        };
+        res.json(returnJSON)
     }
-    public validateWallet = async (req: Request, res: Response) => {
-        const walletKey: string = req.body
-        const isValid: boolean = this.walletService.validateWallet(walletKey);
+
+    public validateSeed = async (req: Request, res: Response) => {
+        const walletseed: string = req.body["seed"];
+        const isValid: boolean = this.walletService.validateSeed(walletseed);
 
         if (isValid) {
-            res.send("Your Key is valid")
+            res.status(200).send("Your Key is valid");
         } else {
             res.send("Your Key is not valid")
         }
     }
-    balance() {
-        throw new Error("Method not implemented.");
+    public balance = async (req: Request, res: Response) => {
+        const address = req.body["address"];
+        const color = req.body["color"];
+        let balance = await this.walletService.getBalance(address, color);
+        res.send(balance.toString());
     }
 }

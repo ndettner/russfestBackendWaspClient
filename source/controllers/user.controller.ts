@@ -50,7 +50,7 @@ export class UserController {
         // TODO entity kennt newPassword nicht
         const user = req['body'] as UserEntity;
         const newPW = req['body']['newPassword']
-                  
+
         const newPwUser = await this.userService.changePW(user, newPW);
 
         res.sendStatus(200);

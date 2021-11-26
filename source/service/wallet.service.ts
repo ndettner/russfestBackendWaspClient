@@ -1,7 +1,6 @@
 import { Base58, BasicClient, Faucet, IAllowedManaPledgeResponse, IFaucetRequest, IFaucetRequestContext, IKeyPair, Seed } from "../wasp_client";
 import { WaspHelpers } from "../wasp_client_helper";
 import { Buffer } from "../wasp_client/buffer"
-import * as config from "../config.dev";
 import { v4 as uuidv4 } from 'uuid';
 import ProofOfWork from "../wasp_client/proof_of_work";
 
@@ -12,43 +11,33 @@ export class WalletService {
     constructor() {
         this.waspHelpers = new WaspHelpers();
         this.basicClient = new BasicClient({
-            GoShimmerAPIUrl: config.goshimmerApiUrl,
-            WaspAPIUrl: config.waspApiUrl,
-        });
+            GoShimmerAPIUrl: process.env.GOSHIMMERAPI,
+            WaspAPIUrl: process.env.WASPAPI,
+        })
     }
 
-
-
-    public validateWallet(walletString: string): boolean {
+    public validateSeed(walletString: string): boolean {
         return Seed.isValid(walletString);
     }
 
     public generateNewSeed(userNameIndex: number): Buffer {
-        const newSeed: Buffer = this.waspHelpers.generateSeed(userNameIndex);
-        if (this.validateWallet(Base58.encode(newSeed))) {
-
-
-            //const faucetRequestResult = walletService.getFaucetRequest(get(address))
-            // faucetRequestResult.faucetRequest.nonce = await powManager.requestProofOfWork(12, faucetRequestResult.poWBuffer);
-            // look up how other clients handle nonce bzw. PoW look inside WebWorker da steht proof of work
-            return newSeed;
+        let newSeed: Buffer = this.waspHelpers.generateSeed(userNameIndex);
+        while (!this.validateSeed(Base58.encode(newSeed))) {
+            newSeed = this.waspHelpers.generateSeed(userNameIndex + 1)
         }
-        else {
-            return;
-        }
+        return newSeed;
     }
 
     public generateAddress(newSeed: Buffer, userNameIndex: number): string {
         return Seed.generateAddress(newSeed, userNameIndex);
     }
 
-    generateKeyPair(newSeed: Buffer, userNameIndex: number): IKeyPair {
+    public generateKeyPair(newSeed: Buffer, userNameIndex: number): IKeyPair {
         return Seed.generateKeyPair(newSeed, userNameIndex);
     }
 
     public async requestFaucetFunds(address: string) {
-        // getManaPledge this.waspHelpers.
-        const manaPledge: IAllowedManaPledgeResponse = await this.waspHelpers.getAllowedManaPledge()
+        const manaPledge: IAllowedManaPledgeResponse = await this.basicClient.getAllowedManaPledge();
 
         const allowedManagePledge = manaPledge.accessMana.allowed[0];
         const consenseusManaPledge = manaPledge.consensusMana.allowed[0];
@@ -70,12 +59,29 @@ export class WalletService {
         faucetRequestResult.faucetRequest.nonce = ProofOfWork.calculateProofOfWork(12, faucetRequestResult.poWBuffer)
 
         try {
-            await this.waspHelpers.sendFaucetRequest(faucetRequestResult.faucetRequest);
+            await this.basicClient.sendFaucetRequest(faucetRequestResult.faucetRequest);
         } catch {
         }
 
         return faucetRequestResult;
 
+
+    }
+
+    public async getBalance(address: string, color: string): Promise<bigint> {
+        const unspents = await this.basicClient.unspentOutputs({ addresses: [address] });
+        const currentUnspent = unspents.unspentOutputs.find((x) => x.address.base58 == address);
+
+        const balance = currentUnspent.outputs
+            .filter(
+                (o) =>
+                    ['ExtendedLockedOutputType', 'SigLockedColoredOutputType'].includes(o.output.type) &&
+                    typeof o.output.output.balances[color] != 'undefined',
+            )
+            .map((uid) => uid.output.output.balances)
+            .reduce((balance: bigint, output) => (balance += BigInt(output[color])), BigInt(0));
+
+        return balance;
 
     }
 

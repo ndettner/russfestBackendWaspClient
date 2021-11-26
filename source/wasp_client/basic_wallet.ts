@@ -214,7 +214,6 @@ export class BasicWallet {
     }
 
     const existingUnlockBlocks: { [address: string]: number } = {};
-    // TODO: Update this in the next refactoring.
     // eslint-disable-next-line @typescript-eslint/no-for-in-array
     for (const index in builtInputs) {
       const addr = address == addressByOutputID[builtInputs[index]];

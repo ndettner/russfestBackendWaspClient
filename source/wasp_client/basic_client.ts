@@ -1,4 +1,5 @@
 import { IFaucetRequest, IOffLedger, OffLedger } from './binary_models';
+import fetch = require('node-fetch'); 
 
 import type {
   IAllowedManaPledgeResponse,

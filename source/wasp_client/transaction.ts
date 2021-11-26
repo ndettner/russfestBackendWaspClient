@@ -98,7 +98,6 @@ export class Transaction {
     buffer.writeBytes(essenceBytes);
     buffer.writeUInt16LE(tx.unlockBlocks.length);
 
-    // TODO: Update this in the next refactoring.
     // eslint-disable-next-line @typescript-eslint/no-for-in-array
     for (const index in tx.unlockBlocks) {
       const ubType = tx.unlockBlocks[index].type;
