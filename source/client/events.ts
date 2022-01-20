@@ -5,7 +5,7 @@
 // >>>> DO NOT CHANGE THIS FILE! <<<<
 // Change the json schema instead
 
-import * as wasmclient from "wasmclient"
+import * as wasmclient from "../wasmclient"
 
 const russfestHandlers = new Map<string, (evt: RussfestEvents, msg: string[]) => void>([
 	["russfest.test", (evt: RussfestEvents, msg: string[]) => evt.test(new EventTest(msg))],

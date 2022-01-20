@@ -24,7 +24,7 @@ class Server {
         this.configuration();
         this.routes();
         this.initializeErrorHandling()
-        let client: wasmclient.ServiceClient = wasmclient.ServiceClient.default();
+        // let client: wasmclient.ServiceClient = wasmclient.ServiceClient.default();
 
     }
 

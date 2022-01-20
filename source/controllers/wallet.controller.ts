@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { WalletService } from "../service/wallet.service";
 import { Base58, BasicClient, Colors, HName, IFaucetRequestContext, IKeyPair, IOnLedger, ISendTransactionResponse, Seed } from "../wasp_client";
 import { Buffer } from "../wasp_client/buffer"
-import { AcceptShopFunc } from "../client";
+import { AcceptShopFunc, RussfestService } from "../client";
 import * as wasmclient from "../wasmclient"
 
 export class WalletController {
@@ -13,7 +13,7 @@ export class WalletController {
         this.walletService = new WalletService();
         this.router = Router();
         this.routes();
-        // let client: wasmclient.ServiceClient = wasmclient.ServiceClient.default();
+        
     }
 
     private routes() {
@@ -21,11 +21,20 @@ export class WalletController {
         this.router.post("/generateNewWallet", this.generateNewWallet)
         this.router.post("/balance", this.balance);
         // this.router.post("/addMusician", this.addMusician)
+
+        
+        
     }
 
 
 
     public generateNewWallet = async (req: Request, res: Response) => {
+
+        const russFestService = new RussfestService(wasmclient.ServiceClient.default());
+        let test = russFestService.getOwner();
+        test.call()
+
+
         const userID: number = req.body["hash"];
         const walletSeed: Buffer = this.walletService.generateNewSeed(userID);
         const address: string = this.walletService.generateAddress(walletSeed, userID)

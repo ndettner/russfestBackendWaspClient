@@ -6,7 +6,6 @@ import { FaucetHelper } from "./faucet/faucet_helper";
 import { IUnspentOutputsRequest, IUnspentOutputsResponse } from "./models/unspent_outputs";
 import { IAllowedManaPledgeResponse } from "./models/mana";
 
-import { PoWWorkerManager } from "./pow_web_worker/pow_worker_manager";
 
 import * as requestSender from "../api_common/request_sender";
 
@@ -18,6 +17,7 @@ import { Wallet } from "./wallet/wallet";
 import { Colors } from "../colors";
 import { AgentID, Configuration, Transfer } from "..";
 import { CoreAccountsService } from "../coreaccounts/service";
+import ProofOfWork from "./pow_web_worker/proof_of_work";
 
 interface GoShimmerClientConfiguration {
     APIUrl: string;
@@ -27,7 +27,6 @@ interface GoShimmerClientConfiguration {
 export class GoShimmerClient {
     private coreAccountsService: CoreAccountsService;
     private readonly goShimmerConfiguration: GoShimmerClientConfiguration;
-    private readonly powManager: PoWWorkerManager = new PoWWorkerManager();
 
     constructor(configuration: Configuration, coreAccountsService: CoreAccountsService) {
         this.coreAccountsService = coreAccountsService;
@@ -95,8 +94,8 @@ export class GoShimmerClient {
         };
 
         const poWBuffer = FaucetHelper.ToBuffer(body);
-
-        body.nonce = await this.powManager.requestProofOfWork(12, poWBuffer);
+        
+        body.nonce = await ProofOfWork.calculateProofOfWork(12, poWBuffer);
 
         const result: IFaucetRequestContext = {
             poWBuffer: poWBuffer,

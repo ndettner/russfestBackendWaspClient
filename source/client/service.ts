@@ -5,7 +5,7 @@
 // >>>> DO NOT CHANGE THIS FILE! <<<<
 // Change the json schema instead
 
-import * as wasmclient from "wasmclient"
+import * as wasmclient from "../wasmclient"
 import * as events from "./events"
 
 const ArgNewSCAdress = "NewSCAdress";
@@ -98,7 +98,7 @@ export class BuyMerchFunc extends wasmclient.ClientFunc {
 
 ///////////////////////////// callCheckProduct /////////////////////////////
 
-export class CallCheckProductFunc extends wasmclient.ClientFunc {
+/* export class CallCheckProductFunc extends wasmclient.ClientFunc {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
 	public product(): void {
@@ -108,7 +108,7 @@ export class CallCheckProductFunc extends wasmclient.ClientFunc {
 	public async post(): Promise<wasmclient.RequestID> {
 		return await super.post(0xdfd91d1f, this.args);
 	}
-}
+} */
 
 export class CallCheckProductResults extends wasmclient.Results {
 
@@ -284,7 +284,7 @@ export class UpdateDeniedShopRequestFunc extends wasmclient.ClientFunc {
 
 ///////////////////////////// getAllOpenShopRequests /////////////////////////////
 
-export class GetAllOpenShopRequestsView extends wasmclient.ClientView {
+/* export class GetAllOpenShopRequestsView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetAllOpenShopRequestsResults> {
 		const res = new GetAllOpenShopRequestsResults();
@@ -401,7 +401,7 @@ export class GetOpenShopRequestResults extends wasmclient.Results {
 		return this.toShop(this.get(ResOpenShopRequest));
 	}
 }
-
+ */
 ///////////////////////////// getOwner /////////////////////////////
 
 export class GetOwnerView extends wasmclient.ClientView {
@@ -422,7 +422,7 @@ export class GetOwnerResults extends wasmclient.Results {
 
 ///////////////////////////// getSpecificProducts /////////////////////////////
 
-export class GetSpecificProductsView extends wasmclient.ClientView {
+/* export class GetSpecificProductsView extends wasmclient.ClientView {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
 	public musician(v: string): void {
@@ -442,11 +442,11 @@ export class GetSpecificProductsResults extends wasmclient.Results {
 	products(): {
 		return this.toProduct(this.get(ResProducts));
 	}
-}
+} */
 
 ///////////////////////////// getTimeslots /////////////////////////////
 
-export class GetTimeslotsView extends wasmclient.ClientView {
+/* export class GetTimeslotsView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetTimeslotsResults> {
 		const res = new GetTimeslotsResults();
@@ -461,7 +461,7 @@ export class GetTimeslotsResults extends wasmclient.Results {
 		return this.toTimeslot(this.get(ResTimeslots));
 	}
 }
-
+ */
 ///////////////////////////// RussfestService /////////////////////////////
 
 export class RussfestService extends wasmclient.Service {
@@ -486,9 +486,9 @@ export class RussfestService extends wasmclient.Service {
 		return new BuyMerchFunc(this);
 	}
 
-	public callCheckProduct(): CallCheckProductFunc {
+/* 	public callCheckProduct(): CallCheckProductFunc {
 		return new CallCheckProductFunc(this);
-	}
+	} */
 
 	public callPayStore(): CallPayStoreFunc {
 		return new CallPayStoreFunc(this);
@@ -522,7 +522,7 @@ export class RussfestService extends wasmclient.Service {
 		return new UpdateDeniedShopRequestFunc(this);
 	}
 
-	public getAllOpenShopRequests(): GetAllOpenShopRequestsView {
+	/* public getAllOpenShopRequests(): GetAllOpenShopRequestsView {
 		return new GetAllOpenShopRequestsView(this);
 	}
 
@@ -544,17 +544,17 @@ export class RussfestService extends wasmclient.Service {
 
 	public getOpenShopRequest(): GetOpenShopRequestView {
 		return new GetOpenShopRequestView(this);
-	}
+	} */
 
 	public getOwner(): GetOwnerView {
 		return new GetOwnerView(this);
 	}
-
+/* 
 	public getSpecificProducts(): GetSpecificProductsView {
 		return new GetSpecificProductsView(this);
 	}
 
 	public getTimeslots(): GetTimeslotsView {
 		return new GetTimeslotsView(this);
-	}
+	} */
 }
