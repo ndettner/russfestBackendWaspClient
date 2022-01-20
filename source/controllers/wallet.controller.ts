@@ -43,9 +43,8 @@ export class WalletController {
         let test = russFestService.getOwner();
         
         let response = await test.call().then();
-        let owner: wasmclient.AgentID = response.owner();
+        let owner: string = response.owner();
         console.log(owner);
-        
 
         let encoder = new Encoder();
         let encoded = encoder.fromAgentID(owner);

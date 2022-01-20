@@ -23,9 +23,10 @@ export async function sendRequestExt<T, U extends IResponse | null>(
 ): Promise<IExtendedResponse<U>> {
     let fetchResponse: Response;
 
+    console.log(path)
     try {
-        // if (!path.startsWith("/")) path = "/" + path;
-        const url = `${apiUrl}/${path}`;       
+        if (!path.startsWith("/")) path = "/" + path;
+        const url = `${apiUrl}${path}`;       
         console.log(url);
         
         fetchResponse = await fetch(url, {
