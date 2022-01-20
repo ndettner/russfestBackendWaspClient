@@ -1,5 +1,5 @@
 /** source/server.ts */
-import express, {Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 import { UserController } from './controllers/user.controller';
 import dotenv from 'dotenv';
@@ -7,11 +7,15 @@ import { typeOrmConfig } from './ormconfig';
 import { createConnection } from 'typeorm';
 import errorMiddleware from './middleware/error.middleware';
 import { WalletController } from './controllers/wallet.controller';
-
+import { WaspController } from './controllers/wasp.controller';
+import { FestivalController } from './controllers/festival.controller';
+import * as wasmclient from "wasmclient"
 
 class Server {
     private userController!: UserController;
     private walletController!: WalletController;
+    private waspController!: WaspController;
+    private festivalController!: FestivalController;
     private app: express.Application;
 
     constructor() {
@@ -20,6 +24,7 @@ class Server {
         this.configuration();
         this.routes();
         this.initializeErrorHandling()
+        // let client: wasmclient.ServiceClient = wasmclient.ServiceClient.default();
 
     }
 
@@ -58,16 +63,20 @@ class Server {
 
         this.userController = new UserController();
         this.walletController = new WalletController();
+        this.waspController = new WaspController();
+        this.festivalController = new FestivalController();
 
         this.app.get("/", (req: Request, res: Response) => {
             res.send("Hello world!");
         });
 
         this.app.use("/api/user", this.userController.router);
-        this.app.use("/api/wallet", this.walletController.router) //Configure the new routes of the controller register
+        this.app.use("/api/wallet", this.walletController.router);
+        this.app.use("/api/wasp", this.waspController.router);
+        this.app.use("/api/russfest", this.festivalController.router)
     }
 
-    private initializeErrorHandling(){
+    private initializeErrorHandling() {
         this.app.use(errorMiddleware)
     }
 
@@ -86,34 +95,3 @@ class Server {
 
 const server = new Server();
 server.start()
-
-
-
-    /** Routes 
-    // Database
-    const database = new Database();
-    
-    
-    
-    
-    
-    
-    router.use('/', routes);
-    
-    
-    router.use((req, res, next) => {
-        const error = new Error('not found');
-        return res.status(404).json({
-            message: error.message
-        });
-    });
-    
-    
-    const httpServer = http.createServer(router);
-    const PORT: any = process.env.PORT ?? 6060;
-    httpServer.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
-    
-    
-    const testUser = new User("Nils", "test", "Attendee", "test123", false);
-    database.store(testUser)
-    */

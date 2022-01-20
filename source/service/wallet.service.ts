@@ -1,8 +1,8 @@
-import { Base58, BasicClient, Faucet, IAllowedManaPledgeResponse, IFaucetRequest, IFaucetRequestContext, IKeyPair, Seed } from "../wasp_client";
+import { Base58, BasicClient, BasicWallet, CallViewResponse, Faucet, IAllowedManaPledgeResponse, IExtendedResponse, IFaucetRequest, IFaucetRequestContext, IKeyPair, IOnLedger, IResponse, ISendTransactionResponse, ITransaction, OnLedger, Seed, Transaction } from "../wasp_client";
 import { WaspHelpers } from "../wasp_client_helper";
 import { Buffer } from "../wasp_client/buffer"
-import { v4 as uuidv4 } from 'uuid';
 import ProofOfWork from "../wasp_client/proof_of_work";
+import { env } from "process";
 
 export class WalletService {
     private waspHelpers: WaspHelpers;
@@ -84,5 +84,55 @@ export class WalletService {
         return balance;
 
     }
+
+    public async sendOnLedgerRequest(keyPair: IKeyPair,
+        address: string,
+        chainId: string,
+        payload: IOnLedger,
+        transfer: bigint = 1n,
+    ): Promise<ISendTransactionResponse> {
+        if (transfer <= 0) {
+            transfer = 1n;
+        }
+
+        const wallet = new BasicWallet(this.basicClient);
+
+        const unspents = await wallet.getUnspentOutputs(address)
+        const consumedOutputs = wallet.determineOutputsToConsume(unspents, transfer);
+        const { inputs, consumedFunds } = wallet.buildInputs(consumedOutputs);
+        const outputs = wallet.buildOutputs(address, chainId, transfer, consumedFunds);
+
+        const tx: ITransaction = {
+            version: 0,
+            timestamp: BigInt(Date.now()) * 1000000n,
+            aManaPledge: Base58.encode(Buffer.alloc(32)),
+            cManaPledge: Base58.encode(Buffer.alloc(32)),
+            inputs: inputs,
+            outputs: outputs,
+            chainId: chainId,
+            payload: OnLedger.ToBuffer(payload),
+            unlockBlocks: [],
+        };
+
+
+        tx.unlockBlocks = wallet.unlockBlocks(tx, keyPair, address, consumedOutputs, inputs);
+
+        const result = Transaction.bytes(tx);
+
+
+        const response = await this.basicClient.sendTransaction({
+            txn_bytes: result.toString('base64'),
+        });
+
+        return response;
+    }
+
+
+
+    public async callView(chainId: string, contractHName: string, entryPoint: string): Promise<CallViewResponse> {
+        const response = this.basicClient.callView(chainId, contractHName, entryPoint)
+        return response;
+    }
+
 
 }

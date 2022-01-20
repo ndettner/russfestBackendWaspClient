@@ -1,7 +1,9 @@
 import { Request, Response, Router } from "express";
 import { WalletService } from "../service/wallet.service";
-import { Base58, BasicClient, Colors, IFaucetRequestContext, IKeyPair } from "../wasp_client";
+import { Base58, BasicClient, Colors, HName, IFaucetRequestContext, IKeyPair, IOnLedger, ISendTransactionResponse, Seed } from "../wasp_client";
 import { Buffer } from "../wasp_client/buffer"
+import { AcceptShopFunc } from "../client";
+import * as wasmclient from "wasmclient";
 
 export class WalletController {
     public router: Router;
@@ -11,13 +13,17 @@ export class WalletController {
         this.walletService = new WalletService();
         this.router = Router();
         this.routes();
+        // let client: wasmclient.ServiceClient = wasmclient.ServiceClient.default();
     }
 
     private routes() {
         this.router.post("/validateSeed", this.validateSeed);
         this.router.post("/generateNewWallet", this.generateNewWallet)
         this.router.post("/balance", this.balance);
+        // this.router.post("/addMusician", this.addMusician)
     }
+
+
 
     public generateNewWallet = async (req: Request, res: Response) => {
         const userID: number = req.body["hash"];
@@ -50,5 +56,9 @@ export class WalletController {
         const color = req.body["color"];
         let balance = await this.walletService.getBalance(address, color);
         res.send(balance.toString());
+    }
+
+    public exchangeToRussCoins = async (req: Request, res: Response) => {
+
     }
 }

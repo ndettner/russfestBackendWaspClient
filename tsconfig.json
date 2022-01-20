@@ -1,17 +1,26 @@
 {
   "compilerOptions": {
-      "experimentalDecorators": true,
-      "forceConsistentCasingInFileNames": true,
-      "module": "commonjs",
-      "esModuleInterop": true,
-      "outDir": "./build",
-      "rootDir": "./source",
-      "target": "ES2020",
-      "skipLibCheck": true,
-      "strict": false,
-      "emitDecoratorMetadata": true,
-      "lib": ["ES2020", "ESNext", "DOM"],
-      "typeRoots": ["types", "node_modules/@types"],
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "outDir": "./build",
+    "rootDir": "./source",
+    "target": "esnext",
+    "skipLibCheck": true,
+    "strict": false,
+    "emitDecoratorMetadata": true,
+    "lib": [
+      "ES2020",
+      "ESNext",
+      "DOM"
+    ],
+    "typeRoots": [
+      "types",
+      "node_modules/@types"
+    ],
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ],
 }
