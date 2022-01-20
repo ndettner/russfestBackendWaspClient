@@ -9,7 +9,7 @@ import errorMiddleware from './middleware/error.middleware';
 import { WalletController } from './controllers/wallet.controller';
 import { WaspController } from './controllers/wasp.controller';
 import { FestivalController } from './controllers/festival.controller';
-import * as wasmclient from "wasmclient"
+import * as wasmclient from "./wasmclient"
 
 class Server {
     private userController!: UserController;
@@ -24,7 +24,7 @@ class Server {
         this.configuration();
         this.routes();
         this.initializeErrorHandling()
-        // let client: wasmclient.ServiceClient = wasmclient.ServiceClient.default();
+        let client: wasmclient.ServiceClient = wasmclient.ServiceClient.default();
 
     }
 

@@ -3,7 +3,7 @@ import { WalletService } from "../service/wallet.service";
 import { Base58, BasicClient, Colors, HName, IFaucetRequestContext, IKeyPair, IOnLedger, ISendTransactionResponse, Seed } from "../wasp_client";
 import { Buffer } from "../wasp_client/buffer"
 import { AcceptShopFunc } from "../client";
-import * as wasmclient from "wasmclient";
+import * as wasmclient from "../wasmclient"
 
 export class WalletController {
     public router: Router;
