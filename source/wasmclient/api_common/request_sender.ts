@@ -1,5 +1,5 @@
 import { IResponse, IExtendedResponse } from "./response_models";
-
+import fetch = require("node-fetch");
 
 const headers: { [id: string]: string } = {
     "Content-Type": "application/json",
@@ -24,8 +24,10 @@ export async function sendRequestExt<T, U extends IResponse | null>(
     let fetchResponse: Response;
 
     try {
-        if (!path.startsWith("/")) path = "/" + path;
-        const url = `${apiUrl}/${path}`;
+        // if (!path.startsWith("/")) path = "/" + path;
+        const url = `${apiUrl}/${path}`;       
+        console.log(url);
+        
         fetchResponse = await fetch(url, {
             method: verb,
             headers,

@@ -45,7 +45,7 @@ export class WaspClient {
         const result = await requestSender.sendRequestExt<unknown, ICallViewResponse>(
             this.waspAPI,
             "post",
-            `/chain/${chainID}/contract/${contractHName}/callview/${entryPoint}`,
+            `chain/${chainID}/contract/${contractHName}/callview/${entryPoint}`,
             args
         );
         if (result?.body !== null && result.body.Items) {

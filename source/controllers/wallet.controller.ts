@@ -4,6 +4,8 @@ import { Base58, BasicClient, Colors, HName, IFaucetRequestContext, IKeyPair, IO
 import { Buffer } from "../wasp_client/buffer"
 import { AcceptShopFunc, RussfestService } from "../client";
 import * as wasmclient from "../wasmclient"
+import { Decoder, Encoder } from "../wasmclient";
+import { env } from "process";
 
 export class WalletController {
     public router: Router;
@@ -30,9 +32,28 @@ export class WalletController {
 
     public generateNewWallet = async (req: Request, res: Response) => {
 
-        const russFestService = new RussfestService(wasmclient.ServiceClient.default());
+        const russFestService = new RussfestService(new wasmclient.ServiceClient({
+            seed: null,
+            waspWebSocketUrl: "ws://127.0.0.1:9090",
+            waspApiUrl: "159.69.187.49:9090",
+            goShimmerApiUrl: "",
+            chainId: env.RUSSFEST_CHAIN_ID
+        }));
+
         let test = russFestService.getOwner();
-        test.call()
+        
+        let response = await test.call().then();
+        let owner: wasmclient.AgentID = response.owner();
+        console.log(owner);
+        
+
+        let encoder = new Encoder();
+        let encoded = encoder.fromAgentID(owner);
+        console.log(encoded);
+        
+        
+        
+
 
 
         const userID: number = req.body["hash"];

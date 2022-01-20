@@ -22,7 +22,7 @@ export class ServiceClient {
         const defaultConfiguration: IConfiguration = {
             seed: null,
             waspWebSocketUrl: "ws://127.0.0.1:9090",
-            waspApiUrl: "127.0.0.1:9090",
+            waspApiUrl: "159.69.187.49:9090",
             goShimmerApiUrl: "",
         };
         return new ServiceClient(new Configuration(defaultConfiguration)); // "127.0.0.1:5550");

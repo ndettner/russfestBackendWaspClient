@@ -139,6 +139,8 @@ export class BasicClient {
           headers
         }).then();
       } else if (verb == 'post' || verb == 'put') {
+        console.log("I FETCHED SOMETHIN");
+        
         fetchResponse = await fetch(`${url}/${path}`, {
           method: verb,
           headers,
