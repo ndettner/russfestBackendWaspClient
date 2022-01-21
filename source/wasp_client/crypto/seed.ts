@@ -18,7 +18,6 @@ export class Seed {
    */
   public static generate(): Buffer {
     const array = new Uint32Array(Seed.SEED_SIZE);
-    console.log(array);
     const cryptoObj: Crypto = window.crypto
     cryptoObj.getRandomValues(array);
 

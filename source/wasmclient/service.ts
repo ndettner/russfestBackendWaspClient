@@ -44,7 +44,6 @@ export class Service {
         const chainId = this.serviceClient.configuration.chainId;
         if (!onLedger) {
             // requested off-ledger request
-            console.log("OFFLEDGER");
             
             const requestID = await this.serviceClient.waspClient.postOffLedgerRequest(chainId, this.scHname, hFuncName, args, transfer, keyPair);
             return requestID;
@@ -55,9 +54,8 @@ export class Service {
             contract: this.scHname,
             entrypoint: hFuncName,
             //TODO: map args
-            //arguments : args           
+            //arguments : args
         };
-        console.log("ONLEDGER");
         const transferAmount = transfer.get(Colors.IOTA_COLOR);
         const transactionID = await this.serviceClient.goShimmerClient.postOnLedgerRequest(chainId, payload, transferAmount, keyPair);
         if (!transactionID) throw new Error("No transaction id");

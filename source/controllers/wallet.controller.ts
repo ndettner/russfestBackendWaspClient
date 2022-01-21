@@ -1,71 +1,55 @@
 import { Request, Response, Router } from "express";
 import { WalletService } from "../service/wallet.service";
-import { Base58, BasicClient, Colors, HName, IFaucetRequestContext, IKeyPair, IOnLedger, ISendTransactionResponse, Seed } from "../wasp_client";
-import { Buffer } from "../wasp_client/buffer"
-import { AcceptShopFunc, RussfestService } from "../client";
+import { IFaucetRequestContext, } from "../wasmclient/goshimmer/faucet/faucet_models";
+import { Buffer } from "../wasmclient/buffer"
 import * as wasmclient from "../wasmclient"
-import { Decoder, Encoder } from "../wasmclient";
+import { ServiceClient } from "../wasmclient";
 import { env } from "process";
+import { getAgentId, Base58, IKeyPair, } from "../wasmclient/crypto";
 
 export class WalletController {
     public router: Router;
     private walletService: WalletService;
+    private walletServiceClient: wasmclient.ServiceClient;
 
     constructor() {
         this.walletService = new WalletService();
         this.router = Router();
         this.routes();
-        
-    }
+        this.walletServiceClient = new ServiceClient({
+            seed: null,
+            waspWebSocketUrl: "ws://127.0.0.1:9090",
+            waspApiUrl: "159.69.187.49:9090",
+            goShimmerApiUrl: env.GOSHIMMERAPI,
+            chainId: env.RUSSFEST_CHAIN_ID
+        });
 
+    }
     private routes() {
         this.router.post("/validateSeed", this.validateSeed);
         this.router.post("/generateNewWallet", this.generateNewWallet)
         this.router.post("/balance", this.balance);
-        // this.router.post("/addMusician", this.addMusician)
-
-        
-        
+        // this.router.post("/addMusician", this.addMusician) 
     }
 
-
-
     public generateNewWallet = async (req: Request, res: Response) => {
-
-        const russFestService = new RussfestService(new wasmclient.ServiceClient({
-            seed: null,
-            waspWebSocketUrl: "ws://127.0.0.1:9090",
-            waspApiUrl: "159.69.187.49:9090",
-            goShimmerApiUrl: "",
-            chainId: env.RUSSFEST_CHAIN_ID
-        }));
-
-        let test = russFestService.getOwner();
-        
-        let response = await test.call().then();
-        let owner: string = response.owner();
-        console.log(owner);
-
-        let encoder = new Encoder();
-        let encoded = encoder.fromAgentID(owner);
-        console.log(encoded);
-        
-        
-        
-
-
-
         const userID: number = req.body["hash"];
         const walletSeed: Buffer = this.walletService.generateNewSeed(userID);
         const address: string = this.walletService.generateAddress(walletSeed, userID)
         const keyPair: IKeyPair = this.walletService.generateKeyPair(walletSeed, userID)
+        const agentID: wasmclient.AgentID = getAgentId(keyPair);
+        
         const faucetRequestResult: IFaucetRequestContext = await this.walletService.requestFaucetFunds(address);
+
+        this.walletServiceClient.configuration.seed = walletSeed;
+        await this.walletServiceClient.goShimmerClient.depositIOTAToAccountInChain(keyPair, agentID, 1n);
 
         let returnJSON = {
             "seed": Base58.encode(walletSeed),
             "address": address,
             "publicKey": Base58.encode(keyPair.publicKey),
-            "secretKey": Base58.encode(keyPair.secretKey)
+            "secretKey": Base58.encode(keyPair.secretKey),
+            "agendID" : agentID 
         };
         res.json(returnJSON)
     }
@@ -81,13 +65,9 @@ export class WalletController {
         }
     }
     public balance = async (req: Request, res: Response) => {
+        this.walletServiceClient.configuration.seed = Base58.decode(req.body["seed"]);
         const address = req.body["address"];
-        const color = req.body["color"];
-        let balance = await this.walletService.getBalance(address, color);
+        let balance = await this.walletServiceClient.goShimmerClient.getIOTABalance(req.body["address"])
         res.send(balance.toString());
-    }
-
-    public exchangeToRussCoins = async (req: Request, res: Response) => {
-
     }
 }

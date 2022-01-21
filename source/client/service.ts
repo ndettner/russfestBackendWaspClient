@@ -161,20 +161,16 @@ export class CallPingShopResults extends wasmclient.Results {
 export class CancelShopRequestFunc extends wasmclient.ClientFunc {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
-	public shopOwnerID(v: wasmclient.AgentID): void {
-		this.args.set(ArgShopOwnerID, this.args.fromAgentID(v));
-	}
-	
 	public name(v: string): void {
 		this.args.set(ArgName, this.args.fromString(v));
 	}
 	
 	public async post(): Promise<wasmclient.RequestID> {
-		this.args.mandatory(ArgShopOwnerID);
 		this.args.mandatory(ArgName);
 		return await super.post(0xbc07aac0, this.args);
 	}
 }
+
 
 ///////////////////////////// denyShop /////////////////////////////
 

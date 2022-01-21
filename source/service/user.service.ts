@@ -13,7 +13,6 @@ export class UserService {
 
     public index = async () => {
         const user = await this.userRepository.find()
-        console.log(user);
         return user;
     }
 
