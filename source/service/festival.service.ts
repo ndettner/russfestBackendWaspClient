@@ -1,14 +1,10 @@
 import { WalletService } from "./wallet.service";
-import { Base58, IKeyPair } from "../wasmclient/crypto";
 import { env } from "process";
 import { AcceptShopFunc, AddMusicianFunc, BuyMerchFunc, CancelShopRequestFunc, DenyShopFunc, RequestShopLicenceFunc, RussfestService, UpdateDeniedShopRequestFunc } from "../client";
 import * as wasmclient from "../wasmclient"
-import { getAgentId } from "../wasmclient/crypto/ed25519"
 import { SeedKeyPair } from "../controllers/festival.controller";
-import { PassThrough } from "stream";
 import { HName } from "../wasp_client";
 import * as consts from "../consts";
-import { response } from "express";
 
 type ParameterResult = { [key: string]: string };
 
