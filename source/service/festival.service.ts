@@ -1,15 +1,96 @@
 import { WalletService } from "./wallet.service";
 import { env } from "process";
-import { AcceptShopFunc, AddMusicianFunc, BuyMerchFunc, CancelShopRequestFunc, DenyShopFunc, RequestShopLicenceFunc, RussfestService, UpdateDeniedShopRequestFunc } from "../client";
+import { AcceptShopFunc, AddMusicianFunc, BuyMerchFunc, CancelShopRequestFunc, DenyShopFunc, GetErrorMessagesViewResults, GetErrorMessagesViewView, RequestShopLicenceFunc, RussfestService, SetOwnerFunc, UpdateDeniedShopRequestFunc } from "../client";
 import * as wasmclient from "../wasmclient"
 import { SeedKeyPair } from "../controllers/festival.controller";
 import { HName } from "../wasp_client";
 import * as consts from "../consts";
+import { getAgentId } from "../wasmclient/crypto";
+import { merchShop } from "../model/shop";
+import { MerchProduct } from "../model/merchProduct";
 
 type ParameterResult = { [key: string]: string };
 
 
 export class FestivalService {
+
+    async getMerchProducts(seedKeyPair: SeedKeyPair, shopName: string) {
+        let merchProducts = [];
+
+        merchProducts = this.fakeMerchProducts(shopName);
+
+        return merchProducts;
+    }
+
+    private fakeMerchProducts(shopname: string) {
+
+        let fakeProducts = []
+        fakeProducts.push(new MerchProduct(
+            "Alligatoah Shop",
+            "Alligatoah",
+            25.50,
+            3,
+            "SHIRT"
+        ));
+
+        fakeProducts.push(new MerchProduct(
+            "Alligatoah Shop",
+            "Alligatoah",
+            33.33,
+            0,
+            "VINYL"
+        ))
+
+        fakeProducts.push(new MerchProduct(
+            "Alligatoah Shop",
+            "Alligatoah",
+            10.25,
+            1,
+            "CAP"
+        ))
+
+        fakeProducts.push(new MerchProduct(
+            "KIZ Shop",
+            "KIZ",
+            50.23,
+            7,
+            "HOODIE"
+        ))
+
+        let merchProducts = fakeProducts.filter((product: MerchProduct) => {
+            return product.shopName === shopname;
+        })
+
+
+
+        return merchProducts;
+    };
+
+    async getMerchShops(seedKeyPair: SeedKeyPair) {
+        let shops = [];
+
+        shops = this.fakeMerchShops();
+
+        return shops
+
+
+    }
+
+    private fakeMerchShops() {
+        let shops = [];
+
+        let alligatoah = new merchShop("Alligatoah Shop", "Alligatoah")
+        let kiz = new merchShop("KIZ Shop", "KIZ")
+        let sia = new merchShop("SIA Shop", "SIA")
+
+        shops.push(alligatoah.toJSON())
+        shops.push(kiz.toJSON())
+        shops.push(sia.toJSON())
+
+        return shops;
+    }
+
+
 
 
     private walletService: WalletService;
@@ -29,7 +110,28 @@ export class FestivalService {
         this.russfestService = new RussfestService(this.waspclient)
     }
 
-    async buyMerch(seedKeyPair: SeedKeyPair, shopName: string, musicianName: string, productType: string, price: number) {
+    async setOwner(seedKeyPair: SeedKeyPair) {
+        this.waspclient.configuration.seed = seedKeyPair.seed;
+        let setOwnerFunc: SetOwnerFunc = this.russfestService.setOwner()
+        setOwnerFunc.sign(seedKeyPair.keyPair)
+        setOwnerFunc.newOwner(getAgentId(seedKeyPair.keyPair))
+        setOwnerFunc.onLedgerRequest(false)
+        setOwnerFunc.transfer(wasmclient.Transfer.iotas(1n))
+        const result = await setOwnerFunc.post();
+
+        return await this.russfestService.waitRequest(result);
+
+    }
+
+    async sentIOTAtoChain(seedKeyPair: SeedKeyPair) {
+        this.waspclient.configuration.seed = seedKeyPair.seed;
+        const agentID: wasmclient.AgentID = getAgentId(seedKeyPair.keyPair);
+
+        let result = await this.waspclient.goShimmerClient.depositIOTAToAccountInChain(seedKeyPair.keyPair, agentID, 2n)
+        return result
+    }
+
+    async buyMerch(seedKeyPair: SeedKeyPair, shopName: string, musicianName: string, productType: string, price: number): Promise<string> {
         this.waspclient.configuration.seed = seedKeyPair.seed;
         let buyMerchFunc: BuyMerchFunc = this.russfestService.buyMerch()
         buyMerchFunc.sign(seedKeyPair.keyPair)
@@ -40,7 +142,11 @@ export class FestivalService {
         buyMerchFunc.onLedgerRequest(false)
         const result = await buyMerchFunc.post();
 
-        return await this.russfestService.waitRequest(result)
+        this.russfestService.waitRequest(result)
+
+        let errorMessage = await this.getErrorMessage(seedKeyPair, result);
+
+        return errorMessage; 
     }
 
 
@@ -125,6 +231,9 @@ export class FestivalService {
 
 
 
+
+
+
     public async addMusician(seedKeyPair: SeedKeyPair, musicianName: string, address: string, shop: string) {
         console.log(seedKeyPair)
         this.waspclient.configuration.seed = seedKeyPair.seed;
@@ -171,6 +280,19 @@ export class FestivalService {
         const onLedgerResponse: ISendTransactionResponse = await this.walletService.sendOnLedgerRequest(keyPair, address, env.RUSSFEST_CHAIN_ID, addMusicianRequest)
         */
         return null;
+    }
+
+    /////////////////////////////// VIEWS //////////////////////////////////////////
+
+    private async getErrorMessage(seedKeyPair: SeedKeyPair, errorMessage: string): Promise<string> {
+        this.waspclient.configuration.seed = seedKeyPair.seed;
+
+        let getErrorMessage: GetErrorMessagesViewView = this.russfestService.getErrorMessagesView();
+        getErrorMessage.requestID(errorMessage);
+        let result: GetErrorMessagesViewResults = await getErrorMessage.call();
+
+        return result.errorMessage();
+
     }
 
 

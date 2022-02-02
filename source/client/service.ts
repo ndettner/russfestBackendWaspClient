@@ -10,7 +10,6 @@ import * as events from "./events"
 
 const ArgNewSCAdress = "NewSCAdress";
 const ArgSCAddress = "SCAddress";
-const ArgShopOwnerID = "ShopOwnerID";
 const ArgFee = "fee";
 const ArgMusician = "musician";
 const ArgMusicianName = "musicianName";
@@ -21,13 +20,16 @@ const ArgNewfee = "newfee";
 const ArgOwner = "owner";
 const ArgProduct = "product";
 const ArgProductType = "productType";
+const ArgRequestID = "requestID";
 const ArgShop = "shop";
 const ArgShopHname = "shopHname";
 const ArgShopName = "shopName";
 const ArgShopOwner = "shopOwner";
 
+const ResScAgentId = "ScAgentId";
 const ResCanProduce = "canProduce";
 const ResDeniedShopRequests = "deniedShopRequests";
+const ResErrorMessage = "errorMessage";
 const ResMessage = "message";
 const ResMusicians = "musicians";
 const ResMusiciansWithoutShop = "musiciansWithoutShop";
@@ -35,6 +37,7 @@ const ResOpenShopRequest = "openShopRequest";
 const ResOwner = "owner";
 const ResPingSuccessful = "pingSuccessful";
 const ResProducts = "products";
+const ResTestString = "testString";
 const ResTimeslots = "timeslots";
 
 ///////////////////////////// acceptShop /////////////////////////////
@@ -101,15 +104,15 @@ export class BuyMerchFunc extends wasmclient.ClientFunc {
 /* export class CallCheckProductFunc extends wasmclient.ClientFunc {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
-	public product(): void {
+	public product(v: ): void {
 		this.args.set(ArgProduct, this.args.fromProductTemplate(v));
 	}
 	
 	public async post(): Promise<wasmclient.RequestID> {
 		return await super.post(0xdfd91d1f, this.args);
-	}
-} */
-
+	} 
+}
+*/
 export class CallCheckProductResults extends wasmclient.Results {
 
 	canProduce(): boolean {
@@ -170,7 +173,6 @@ export class CancelShopRequestFunc extends wasmclient.ClientFunc {
 		return await super.post(0xbc07aac0, this.args);
 	}
 }
-
 
 ///////////////////////////// denyShop /////////////////////////////
 
@@ -278,6 +280,24 @@ export class UpdateDeniedShopRequestFunc extends wasmclient.ClientFunc {
 	}
 }
 
+///////////////////////////// getAgendID /////////////////////////////
+
+export class GetAgendIDView extends wasmclient.ClientView {
+
+	public async call(): Promise<GetAgendIDResults> {
+		const res = new GetAgendIDResults();
+		await this.callView("getAgendID", null, res);
+		return res;
+	}
+}
+
+export class GetAgendIDResults extends wasmclient.Results {
+
+	scAgentId(): wasmclient.AgentID {
+		return this.toAgentID(this.get(ResScAgentId));
+	}
+}
+
 ///////////////////////////// getAllOpenShopRequests /////////////////////////////
 
 /* export class GetAllOpenShopRequestsView extends wasmclient.ClientView {
@@ -291,14 +311,14 @@ export class UpdateDeniedShopRequestFunc extends wasmclient.ClientFunc {
 
 export class GetAllOpenShopRequestsResults extends wasmclient.Results {
 
-	openShopRequest():  {
-		return this.toShop(this.get(ResOpenShopRequest));
+	openShopRequest(): Shop {
+		return Shop.fromBytes(this.get(ResOpenShopRequest));
 	}
-}
+} */
 
 ///////////////////////////// getAllProducts /////////////////////////////
 
-export class GetAllProductsView extends wasmclient.ClientView {
+/* export class GetAllProductsView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetAllProductsResults> {
 		const res = new GetAllProductsResults();
@@ -309,14 +329,14 @@ export class GetAllProductsView extends wasmclient.ClientView {
 
 export class GetAllProductsResults extends wasmclient.Results {
 
-	products():  {
-		return this.toProduct(this.get(ResProducts));
+	products(): Product {
+		return Product.fromBytes(this.get(ResProducts));
 	}
-}
+} */
 
 ///////////////////////////// getDeniedShopRequests /////////////////////////////
 
-export class GetDeniedShopRequestsView extends wasmclient.ClientView {
+/* export class GetDeniedShopRequestsView extends wasmclient.ClientView {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
 	public shopOwner(v: wasmclient.AgentID): void {
@@ -333,14 +353,38 @@ export class GetDeniedShopRequestsView extends wasmclient.ClientView {
 
 export class GetDeniedShopRequestsResults extends wasmclient.Results {
 
-	deniedShopRequests():  {
-		return this.toShop(this.get(ResDeniedShopRequests));
+	deniedShopRequests(): Shop {
+		return Shop.fromBytes(this.get(ResDeniedShopRequests));
+	}
+}
+ */
+///////////////////////////// getErrorMessagesView /////////////////////////////
+
+export class GetErrorMessagesViewView extends wasmclient.ClientView {
+	private args: wasmclient.Arguments = new wasmclient.Arguments();
+	
+	public requestID(v: string): void {
+		this.args.set(ArgRequestID, this.args.fromString(v));
+	}
+
+	public async call(): Promise<GetErrorMessagesViewResults> {
+		this.args.mandatory(ArgRequestID);
+		const res = new GetErrorMessagesViewResults();
+		await this.callView("getErrorMessagesView", this.args, res);
+		return res;
+	}
+}
+
+export class GetErrorMessagesViewResults extends wasmclient.Results {
+
+	errorMessage(): string {
+		return this.toString(this.get(ResErrorMessage));
 	}
 }
 
 ///////////////////////////// getMusicians /////////////////////////////
 
-export class GetMusiciansView extends wasmclient.ClientView {
+/* export class GetMusiciansView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetMusiciansResults> {
 		const res = new GetMusiciansResults();
@@ -351,13 +395,13 @@ export class GetMusiciansView extends wasmclient.ClientView {
 
 export class GetMusiciansResults extends wasmclient.Results {
 
-	musicians():  {
-		return this.toMusician(this.get(ResMusicians));
+	musicians(): Musician {
+		return Musician.fromBytes(this.get(ResMusicians));
 	}
-}
+} */
 
 ///////////////////////////// getMusiciansWithoutShop /////////////////////////////
-
+/* 
 export class GetMusiciansWithoutShopView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetMusiciansWithoutShopResults> {
@@ -369,14 +413,14 @@ export class GetMusiciansWithoutShopView extends wasmclient.ClientView {
 
 export class GetMusiciansWithoutShopResults extends wasmclient.Results {
 
-	musiciansWithoutShop():  {
-		return this.toMusician(this.get(ResMusiciansWithoutShop));
+	musiciansWithoutShop(): Musician {
+		return Musician.fromBytes(this.get(ResMusiciansWithoutShop));
 	}
 }
-
+ */
 ///////////////////////////// getOpenShopRequest /////////////////////////////
 
-export class GetOpenShopRequestView extends wasmclient.ClientView {
+/* export class GetOpenShopRequestView extends wasmclient.ClientView {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
 	public shopOwner(v: wasmclient.AgentID): void {
@@ -393,8 +437,8 @@ export class GetOpenShopRequestView extends wasmclient.ClientView {
 
 export class GetOpenShopRequestResults extends wasmclient.Results {
 
-	openShopRequest(): {
-		return this.toShop(this.get(ResOpenShopRequest));
+	openShopRequest(): Shop {
+		return Shop.fromBytes(this.get(ResOpenShopRequest));
 	}
 }
  */
@@ -435,11 +479,11 @@ export class GetOwnerResults extends wasmclient.Results {
 
 export class GetSpecificProductsResults extends wasmclient.Results {
 
-	products(): {
-		return this.toProduct(this.get(ResProducts));
+	products(): Product {
+		return Product.fromBytes(this.get(ResProducts));
 	}
-} */
-
+}
+ */
 ///////////////////////////// getTimeslots /////////////////////////////
 
 /* export class GetTimeslotsView extends wasmclient.ClientView {
@@ -453,11 +497,29 @@ export class GetSpecificProductsResults extends wasmclient.Results {
 
 export class GetTimeslotsResults extends wasmclient.Results {
 
-	timeslots():  {
-		return this.toTimeslot(this.get(ResTimeslots));
+	timeslots(): Timeslot {
+		return Timeslot.fromBytes(this.get(ResTimeslots));
 	}
 }
  */
+///////////////////////////// testView /////////////////////////////
+
+export class TestViewView extends wasmclient.ClientView {
+
+	public async call(): Promise<TestViewResults> {
+		const res = new TestViewResults();
+		await this.callView("testView", null, res);
+		return res;
+	}
+}
+
+export class TestViewResults extends wasmclient.Results {
+
+	testString(): string {
+		return this.toString(this.get(ResTestString));
+	}
+}
+
 ///////////////////////////// RussfestService /////////////////////////////
 
 export class RussfestService extends wasmclient.Service {
@@ -484,8 +546,8 @@ export class RussfestService extends wasmclient.Service {
 
 /* 	public callCheckProduct(): CallCheckProductFunc {
 		return new CallCheckProductFunc(this);
-	} */
-
+	}
+ */
 	public callPayStore(): CallPayStoreFunc {
 		return new CallPayStoreFunc(this);
 	}
@@ -518,7 +580,11 @@ export class RussfestService extends wasmclient.Service {
 		return new UpdateDeniedShopRequestFunc(this);
 	}
 
-	/* public getAllOpenShopRequests(): GetAllOpenShopRequestsView {
+	public getAgendID(): GetAgendIDView {
+		return new GetAgendIDView(this);
+	}
+/* 
+	public getAllOpenShopRequests(): GetAllOpenShopRequestsView {
 		return new GetAllOpenShopRequestsView(this);
 	}
 
@@ -529,8 +595,12 @@ export class RussfestService extends wasmclient.Service {
 	public getDeniedShopRequests(): GetDeniedShopRequestsView {
 		return new GetDeniedShopRequestsView(this);
 	}
+ */
+	public getErrorMessagesView(): GetErrorMessagesViewView {
+		return new GetErrorMessagesViewView(this);
+	}
 
-	public getMusicians(): GetMusiciansView {
+/* 	public getMusicians(): GetMusiciansView {
 		return new GetMusiciansView(this);
 	}
 
@@ -552,5 +622,9 @@ export class RussfestService extends wasmclient.Service {
 
 	public getTimeslots(): GetTimeslotsView {
 		return new GetTimeslotsView(this);
-	} */
+	}
+ */
+	public testView(): TestViewView {
+		return new TestViewView(this);
+	}
 }

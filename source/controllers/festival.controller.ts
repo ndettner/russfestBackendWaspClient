@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import WebSocket from "ws";
 import { HName, ISendTransactionResponse } from "../wasp_client";
 import { FestivalService } from "../service/festival.service";
-import { env } from "process";
+import { env, send } from "process";
 import * as wasmclient from "../wasmclient"
 import { Base58, IKeyPair } from "../wasmclient/crypto";
 import { Buffer } from "../wasmclient/buffer"
@@ -18,7 +18,7 @@ export class FestivalController {
     constructor() {
         this.router = Router();
         this.routes()
-        this.connectWebSocket();
+        // this.connectWebSocket();
         this.festivalService = new FestivalService();
     }
 
@@ -31,12 +31,57 @@ export class FestivalController {
         this.router.post("/cancelShopRequest", this.cancelShopRequest)
         this.router.post("/updateDeniedShopRequest", this.updateDeniedShopRequest)
         this.router.post("/buyMerch", this.buyMerch)
+        this.router.post("/sentIOTAtoChain", this.sentIOTAtoChain)
+        this.router.post("/setOwner", this.setOwner)
+        this.router.post("/getMerchShops", this.getMerchShops)
+        this.router.post("/getMerchProducts", this.getMerchProducts)
+    }
+
+    public getMerchProducts = async (req: Request, res: Response) => {
+        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+        const response = await this.festivalService.getMerchProducts(seedKeyPair, req.body["shopName"]);
+        res.status(200).send(response)
+
+    }
+
+    public getMerchShops = async (req: Request, res: Response) => {
+        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+        const response = await this.festivalService.getMerchShops(seedKeyPair);
+
+        res.status(200).send(response);
+    }
+
+    public setOwner = async (req: Request, res: Response) => {
+        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+        const response = await this.festivalService.setOwner(seedKeyPair);
+    }
+
+    public sentIOTAtoChain = async (req: Request, res: Response) => {
+        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+        const response = await this.festivalService.sentIOTAtoChain(seedKeyPair);
+        if (response) {
+            res.status(200).send()
+        } else {
+            res.status(400).send()
+        }
+
     }
 
     public buyMerch = async (req: Request, res: Response) => {
         const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+        console.log(req.body);
+        
+
+        res.status(200).send("Bla bla bla");/* 
         const response = await this.festivalService.buyMerch(seedKeyPair, req.body["shopName"], req.body["musician"], req.body["productType"], req.body["price"])
-        res.status(200).send()
+
+        if (response === "") {
+            res.status(200).send();
+        } else {
+            res.status(403).send(response);
+        } */
+
+
     }
 
     public updateDeniedShopRequest = async (req: Request, res: Response) => {

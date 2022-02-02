@@ -12,7 +12,9 @@ const russfestHandlers = new Map<string, (evt: RussfestEvents, msg: string[]) =>
 ]);
 
 export class RussfestEvents implements wasmclient.IEventHandler {
+/* eslint-disable @typescript-eslint/no-empty-function */
 	test: (evt: EventTest) => void = () => {};
+/* eslint-enable @typescript-eslint/no-empty-function */
 
 	public callHandler(topic: string, params: string[]): void {
 		const handler = russfestHandlers.get(topic);

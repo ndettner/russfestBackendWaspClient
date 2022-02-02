@@ -3,7 +3,7 @@ import { WalletService } from "../service/wallet.service";
 import { IFaucetRequestContext, } from "../wasmclient/goshimmer/faucet/faucet_models";
 import { Buffer } from "../wasmclient/buffer"
 import * as wasmclient from "../wasmclient"
-import { ServiceClient } from "../wasmclient";
+import { GoShimmerClient, ServiceClient } from "../wasmclient";
 import { env } from "process";
 import { getAgentId, Base58, IKeyPair, } from "../wasmclient/crypto";
 
@@ -42,7 +42,8 @@ export class WalletController {
         const faucetRequestResult: IFaucetRequestContext = await this.walletService.requestFaucetFunds(address);
 
         this.walletServiceClient.configuration.seed = walletSeed;
-        await this.walletServiceClient.goShimmerClient.depositIOTAToAccountInChain(keyPair, agentID, 1n);
+        this.walletServiceClient.goShimmerClient.depositIOTAToAccountInChain(keyPair, agentID, 1n);
+
 
         let returnJSON = {
             "seed": Base58.encode(walletSeed),

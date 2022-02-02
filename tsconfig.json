@@ -6,12 +6,12 @@
     "esModuleInterop": true,
     "outDir": "./build",
     "rootDir": "./source",
-    "target": "esnext",
+    "target": "es2020",
     "skipLibCheck": true,
     "strict": false,
     "emitDecoratorMetadata": true,
     "lib": [
-      "ES2021",
+      "es2020",
       "ESNext",
       "DOM"
     ],

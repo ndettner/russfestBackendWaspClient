@@ -12,7 +12,7 @@ import { FestivalController } from './controllers/festival.controller';
 import * as wasmclient from "./wasmclient"
 
 class Server {
-    private userController!: UserController;
+    // private userController!: UserController;
     private walletController!: WalletController;
     private waspController!: WaspController;
     private festivalController!: FestivalController;
@@ -59,9 +59,9 @@ class Server {
     }
 
     public async routes() {
-        await createConnection(typeOrmConfig);
+        // await createConnection(typeOrmConfig);
 
-        this.userController = new UserController();
+        // this.userController = new UserController();
         this.walletController = new WalletController();
         this.waspController = new WaspController();
         this.festivalController = new FestivalController();
@@ -70,7 +70,7 @@ class Server {
             res.send("Hello world!");
         });
 
-        this.app.use("/api/user", this.userController.router);
+        // this.app.use("/api/user", this.userController.router);
         this.app.use("/api/wallet", this.walletController.router);
         this.app.use("/api/wasp", this.waspController.router);
         this.app.use("/api/russfest", this.festivalController.router)

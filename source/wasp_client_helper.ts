@@ -1,7 +1,8 @@
-import { IAllowedManaPledgeResponse, Seed } from "./wasp_client"
-import { Buffer } from "./wasp_client/buffer"
+import { IAllowedManaPledgeResponse } from "./wasmclient/goshimmer/models/mana"
+import { Buffer } from "./wasmclient/buffer"
+import {Seed} from "./wasmclient/crypto"
 import { aleaRNGFactory } from "number-generator";
-import { IFaucetRequest } from "./wasp_client/binary_models";
+import { IFaucetRequest } from "./wasmclient/goshimmer/faucet/faucet_models";
 import fetch = require('node-fetch'); 
 export class WaspHelpers {
    
