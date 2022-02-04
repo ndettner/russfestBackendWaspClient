@@ -35,6 +35,30 @@ export class FestivalController {
         this.router.post("/setOwner", this.setOwner)
         this.router.post("/getMerchShops", this.getMerchShops)
         this.router.post("/getMerchProducts", this.getMerchProducts)
+        this.router.post("/getAllOpenShopRequests", this.getAllOpenShopRequest)
+        this.router.post("/getFestivalEarnings", this.getFestivalEarnings)
+    }
+
+    public getFestivalEarnings = async (req: Request, res: Response) => {
+
+        try {
+            throw new Error("getFestival Earnings not implemented.");
+        } catch (error) {
+            console.log(error);
+            res.status(200).send("12345");
+        }
+
+    }
+
+    public getAllOpenShopRequest = async (req: Request, res: Response) => {
+        try {
+            throw new Error("getAllOpenRequests not implemented.");
+        } catch (error) {
+            console.log(error);
+            res.status(200).send("[]");
+        }
+        // const response = await this.festivalService.getAllOpenShops();
+
     }
 
     public getMerchProducts = async (req: Request, res: Response) => {
@@ -70,7 +94,7 @@ export class FestivalController {
     public buyMerch = async (req: Request, res: Response) => {
         const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
         console.log(req.body);
-        
+
 
         res.status(200).send("Bla bla bla");/* 
         const response = await this.festivalService.buyMerch(seedKeyPair, req.body["shopName"], req.body["musician"], req.body["productType"], req.body["price"])

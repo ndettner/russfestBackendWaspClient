@@ -3,6 +3,7 @@ import { WaspHelpers } from "../wasp_client_helper";
 import { Buffer } from "../wasp_client/buffer"
 import ProofOfWork from "../wasp_client/proof_of_work";
 import { env } from "process";
+import { IFaucetResponse } from "../wasmclient/goshimmer/faucet/faucet_models";
 
 export class WalletService {
     private waspHelpers: WaspHelpers;
@@ -59,11 +60,11 @@ export class WalletService {
         faucetRequestResult.faucetRequest.nonce = ProofOfWork.calculateProofOfWork(12, faucetRequestResult.poWBuffer)
 
         try {
-            await this.basicClient.sendFaucetRequest(faucetRequestResult.faucetRequest);
+            return await this.basicClient.sendFaucetRequest(faucetRequestResult.faucetRequest);
+
         } catch {
         }
 
-        return faucetRequestResult;
 
 
     }

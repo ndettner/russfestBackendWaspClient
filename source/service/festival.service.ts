@@ -1,18 +1,20 @@
 import { WalletService } from "./wallet.service";
 import { env } from "process";
-import { AcceptShopFunc, AddMusicianFunc, BuyMerchFunc, CancelShopRequestFunc, DenyShopFunc, GetErrorMessagesViewResults, GetErrorMessagesViewView, RequestShopLicenceFunc, RussfestService, SetOwnerFunc, UpdateDeniedShopRequestFunc } from "../client";
+import { AcceptShopFunc, AddMusicianFunc, BuyMerchFunc, CancelShopRequestFunc, DenyShopFunc, GetAllOpenShopRequestsResults, GetAllOpenShopRequestsView, GetErrorMessagesViewResults, GetErrorMessagesViewView, RequestShopLicenceFunc, RussfestService, SetOwnerFunc, UpdateDeniedShopRequestFunc } from "../client";
 import * as wasmclient from "../wasmclient"
 import { SeedKeyPair } from "../controllers/festival.controller";
 import { HName } from "../wasp_client";
 import * as consts from "../consts";
 import { getAgentId } from "../wasmclient/crypto";
-import { merchShop } from "../model/shop";
+import { merchShop } from "../model/merchShop";
 import { MerchProduct } from "../model/merchProduct";
 
 type ParameterResult = { [key: string]: string };
 
 
 export class FestivalService {
+
+
 
     async getMerchProducts(seedKeyPair: SeedKeyPair, shopName: string) {
         let merchProducts = [];
@@ -110,6 +112,7 @@ export class FestivalService {
         this.russfestService = new RussfestService(this.waspclient)
     }
 
+
     async setOwner(seedKeyPair: SeedKeyPair) {
         this.waspclient.configuration.seed = seedKeyPair.seed;
         let setOwnerFunc: SetOwnerFunc = this.russfestService.setOwner()
@@ -146,7 +149,7 @@ export class FestivalService {
 
         let errorMessage = await this.getErrorMessage(seedKeyPair, result);
 
-        return errorMessage; 
+        return errorMessage;
     }
 
 
@@ -293,6 +296,16 @@ export class FestivalService {
 
         return result.errorMessage();
 
+    }
+
+
+    public async getAllOpenShops() {
+        let getAllOpenShopRequest: GetAllOpenShopRequestsView = this.russfestService.getAllOpenShopRequests();
+        let result: GetAllOpenShopRequestsResults = await getAllOpenShopRequest.call();
+
+        // TODO testen 
+        // Eigentlich sollte das ein Array sein???
+        console.log(result.openShopRequest());
     }
 
 
