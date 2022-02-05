@@ -237,8 +237,7 @@ export class FestivalService {
 
 
 
-    public async addMusician(seedKeyPair: SeedKeyPair, musicianName: string, address: string, shop: string) {
-        console.log(seedKeyPair)
+    public async addMusician(seedKeyPair: SeedKeyPair, musicianName: string, shop: string): Promise<string> {
         this.waspclient.configuration.seed = seedKeyPair.seed;
 
         let addMusicianFunc: AddMusicianFunc = this.russfestService.addMusician();
@@ -247,6 +246,9 @@ export class FestivalService {
         addMusicianFunc.name(musicianName);
         addMusicianFunc.transfer(wasmclient.Transfer.iotas(1n))
         addMusicianFunc.onLedgerRequest(false);
+
+        // TODO try catch block
+
         if (!typeof shop === undefined) {
             addMusicianFunc.shop(shop)
         }
@@ -254,6 +256,9 @@ export class FestivalService {
         let response = await addMusicianFunc.post();
 
         await this.russfestService.waitRequest(response)
+
+        let getErrorMessage = await this.getErrorMessage(seedKeyPair, response);
+
 
 
 
@@ -282,16 +287,16 @@ export class FestivalService {
 
         const onLedgerResponse: ISendTransactionResponse = await this.walletService.sendOnLedgerRequest(keyPair, address, env.RUSSFEST_CHAIN_ID, addMusicianRequest)
         */
-        return null;
+        return getErrorMessage;
     }
 
     /////////////////////////////// VIEWS //////////////////////////////////////////
 
-    private async getErrorMessage(seedKeyPair: SeedKeyPair, errorMessage: string): Promise<string> {
+    private async getErrorMessage(seedKeyPair: SeedKeyPair, requestID: string): Promise<string> {
         this.waspclient.configuration.seed = seedKeyPair.seed;
 
         let getErrorMessage: GetErrorMessagesViewView = this.russfestService.getErrorMessagesView();
-        getErrorMessage.requestID(errorMessage);
+        getErrorMessage.requestID(requestID);
         let result: GetErrorMessagesViewResults = await getErrorMessage.call();
 
         return result.errorMessage();

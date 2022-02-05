@@ -102,7 +102,7 @@ export class FestivalController {
         if (response === "") {
             res.status(200).send();
         } else {
-            res.status(403).send(response);
+            res.status(400).send(response);
         } */
 
 
@@ -138,16 +138,15 @@ export class FestivalController {
     public addMusician = async (req: Request, res: Response) => {
 
         const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"])
-        const onLedgerResponse: ISendTransactionResponse = await this.festivalService.addMusician(seedKeyPair, req.body["musicianName"], req.body["address"], req.body["shop"]);
+        const errorMessage: string = await this.festivalService.addMusician(seedKeyPair, req.body["musicianName"], req.body["shop"]);
 
-        /* 
-        if (typeof onLedgerResponse.error !== "undefined") {
-            res.status(405).send(onLedgerResponse.error);
+        if (errorMessage === "") {
+            res.status(200).send()
         } else {
-            res.status(200).send();
-        } */
+            res.status(400).send(errorMessage);
+        }
 
-        res.status(200).send()
+
     }
 
 
