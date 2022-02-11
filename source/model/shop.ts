@@ -30,6 +30,18 @@ export class Shop {
         let decoder = new ShopDecoder();
         return decoder.decodeShop(bytes);
     }
+
+    toJson() {
+        return {
+            shopName: this.shopName,
+            musicianName: this.musicianName,
+            fee: this.fee.toString(),
+            shopOwner: this.shopOwner,
+            SCAddress: this.SCAddress,
+            isRegistered: this.isRegistered,
+            shopHname: this.shopHName
+        }
+    }
 }
 
 export class ShopDecoder extends wasmclient.Decoder {

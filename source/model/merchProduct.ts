@@ -1,4 +1,4 @@
-import { Encoder } from "../wasmclient";
+import { Decoder, Encoder } from "../wasmclient";
 import { Buffer } from "../wasmclient/buffer";
 
 export class MerchProduct {
@@ -26,13 +26,5 @@ export class MerchProduct {
         }
     }
 
-    BufferTofrom(bytes: Buffer) {
-        // split Buffer according to size in wasmclient.TYPE_ADRESS etc.
-        // user decoder to decode every part and build a MerchProduct?
-        let encoder = new Encoder();
-        
-        let shopNameBuffer = encoder.fromString(this.shopName);
-        let musicianBuffer = encoder.fromString(this.musician);
 
-    }
 }

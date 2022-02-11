@@ -1,6 +1,6 @@
 import { WalletService } from "./wallet.service";
 import { env } from "process";
-import { AcceptShopFunc, AddMusicianFunc, BuyMerchFunc, CancelShopRequestFunc, DenyShopFunc, GetAllOpenShopRequestsResults, GetAllOpenShopRequestsView, GetErrorMessagesViewResults, GetErrorMessagesViewView, RequestShopLicenceFunc, RussfestService, SetOwnerFunc, UpdateDeniedShopRequestFunc } from "../client";
+import { AcceptShopFunc, AddMusicianFunc, BuyMerchFunc, CancelShopRequestFunc, DenyShopFunc, GetErrorMessagesViewResults, GetErrorMessagesViewView, RequestShopLicenceFunc, RussfestService, SetOwnerFunc, UpdateDeniedShopRequestFunc } from "../client";
 import * as wasmclient from "../wasmclient"
 import { SeedKeyPair } from "../controllers/festival.controller";
 import { HName } from "../wasp_client";
@@ -8,15 +8,100 @@ import * as consts from "../consts";
 import { getAgentId } from "../wasmclient/crypto";
 import { merchShop } from "../model/merchShop";
 import { MerchProduct } from "../model/merchProduct";
+import { Shop } from "../model/shop";
+import { ShopStatistics, StatisticsProduct, StatisticsProductTemplate } from "../model/shopStatistics";
 
 type ParameterResult = { [key: string]: string };
 
 
 export class FestivalService {
 
+    async getShopStatistics(seedKeyPair: SeedKeyPair, shopName: String) {
+
+        try {
+            let statistics: ShopStatistics = this.fakeShopStatistics();
+            return statistics;
+        } catch (e) {
+            throw e;
+        }
+
+        /*  Should return a shop statistic with:
+            -shopName 
+            -statistics
+            -- earnings
+            -- produced products
+            -- sold products
+    
+            -- active product templates
+            -- production
+            --- 1
+            --- 2
+            --- ...
+            --- n
+            */
+
+    }
 
 
-    async getMerchProducts(seedKeyPair: SeedKeyPair, shopName: string) {
+    fakeShopStatistics(): ShopStatistics {
+
+        let productTemplates = []
+
+        productTemplates.push(new StatisticsProductTemplate("ALLIGATOAH SHOP", "Alligatoah", 25, "SHIRT"))
+        productTemplates.push(new StatisticsProductTemplate("ALLIGATOAH SHOP", "Alligatoah", 10, "CAP"))
+        productTemplates.push(new StatisticsProductTemplate("ALLIGATOAH SHOP", "Alligatoah", 33, "VINYL"))
+
+        let production = []
+        production.push(new StatisticsProduct(1n, "SHIRT", "Alligatoah", 25, 20220211n, 0, "ALLIGATOAH SHOP"))
+        production.push(new StatisticsProduct(2n, "CAP", "Alligatoah", 10, 20220212n, 2, "ALLIGATOAH SHOP"))
+        production.push(new StatisticsProduct(3n, "SHIRT", "Alligatoah", 25, 20220213n, 1, "ALLIGATOAH SHOP"))
+        production.push(new StatisticsProduct(4n, "CAP", "Alligatoah", 10, 20220214n, 2, "ALLIGATOAH SHOP"))
+        production.push(new StatisticsProduct(5n, "VINYL", "Alligatoah", 33, 20220215n, 3, "ALLIGATOAH SHOP"))
+        production.push(new StatisticsProduct(6n, "SHIRT", "Alligatoah", 25, 20220216n, 4, "ALLIGATOAH SHOP"))
+
+
+
+        return new ShopStatistics("ALLIGATOAH SHOP", 666, 42, 32, productTemplates, production);
+    }
+
+
+
+
+
+    async getShopOwnerShops(seedKeyPair: SeedKeyPair) {
+        console.log(getAgentId(seedKeyPair.keyPair));
+
+        let shops = [];
+
+
+        shops = this.fakeMerchShops();
+
+        return shops;
+    }
+
+
+    async getShopOwnerRequests(seedKeyPair: SeedKeyPair) {
+        console.log(getAgentId(seedKeyPair.keyPair));
+        let openRequest = await this.fakeOpenShop();
+
+        let deniedRequests = [];
+
+        deniedRequests.push(new Shop(
+            "SXTN Shop",
+            "SXTN",
+            33n,
+            "TESTOwner",
+            "TestSCADDRESS",
+            "DENIED",
+            12345
+        ).toJson());
+
+        return [openRequest, deniedRequests];
+    }
+
+
+
+    async getMerchProducts(shopName: string) {
         let merchProducts = [];
 
         merchProducts = this.fakeMerchProducts(shopName);
@@ -24,13 +109,15 @@ export class FestivalService {
         return merchProducts;
     }
 
+
+
     private fakeMerchProducts(shopname: string) {
 
         let fakeProducts = []
         fakeProducts.push(new MerchProduct(
             "Alligatoah Shop",
             "Alligatoah",
-            25.50,
+            25,
             3,
             "SHIRT"
         ));
@@ -38,7 +125,7 @@ export class FestivalService {
         fakeProducts.push(new MerchProduct(
             "Alligatoah Shop",
             "Alligatoah",
-            33.33,
+            33,
             0,
             "VINYL"
         ))
@@ -46,7 +133,7 @@ export class FestivalService {
         fakeProducts.push(new MerchProduct(
             "Alligatoah Shop",
             "Alligatoah",
-            10.25,
+            10,
             1,
             "CAP"
         ))
@@ -54,7 +141,7 @@ export class FestivalService {
         fakeProducts.push(new MerchProduct(
             "KIZ Shop",
             "KIZ",
-            50.23,
+            50,
             7,
             "HOODIE"
         ))
@@ -68,7 +155,7 @@ export class FestivalService {
         return merchProducts;
     };
 
-    async getMerchShops(seedKeyPair: SeedKeyPair) {
+    async getMerchShops() {
         let shops = [];
 
         shops = this.fakeMerchShops();
@@ -108,7 +195,6 @@ export class FestivalService {
             goShimmerApiUrl: env.GOSHIMMERAPI,
             chainId: env.RUSSFEST_CHAIN_ID
         })
-
         this.russfestService = new RussfestService(this.waspclient)
     }
 
@@ -121,6 +207,7 @@ export class FestivalService {
         setOwnerFunc.onLedgerRequest(false)
         setOwnerFunc.transfer(wasmclient.Transfer.iotas(1n))
         const result = await setOwnerFunc.post();
+
 
         return await this.russfestService.waitRequest(result);
 
@@ -153,7 +240,7 @@ export class FestivalService {
     }
 
 
-    async updateDeniedShopRequest(seedKeyPair: SeedKeyPair, shopName: string, newfee: number, newScAddress: string, shopHname: string) {
+    async updateDeniedShopRequest(seedKeyPair: SeedKeyPair, shopName: string, newfee: number, shopHname: string) {
         this.waspclient.configuration.seed = seedKeyPair.seed;
         let updateDeniedShopRequestFunc: UpdateDeniedShopRequestFunc = this.russfestService.updateDeniedShopRequest()
         updateDeniedShopRequestFunc.sign(seedKeyPair.keyPair)
@@ -161,10 +248,6 @@ export class FestivalService {
 
         if (!typeof newfee === undefined) {
             updateDeniedShopRequestFunc.newfee(BigInt(newfee))
-        }
-
-        if (!typeof newScAddress === undefined) {
-            updateDeniedShopRequestFunc.newSCAdress(newScAddress)
         }
 
         if (!typeof shopHname === undefined) {
@@ -191,15 +274,14 @@ export class FestivalService {
         return await this.russfestService.waitRequest(response)
     }
 
-    async requestShopLicence(seedKeyPair: SeedKeyPair, shopName: any, fee: bigint, SCAgentID: string, musicianName: any, Hname: number) {
+    async requestShopLicence(seedKeyPair: SeedKeyPair, shopName: any, fee: bigint, musicianName: any, hName: number) {
         this.waspclient.configuration.seed = seedKeyPair.seed;
         let requestShopLicenceFunc: RequestShopLicenceFunc = this.russfestService.requestShopLicence();
         requestShopLicenceFunc.sign(seedKeyPair.keyPair)
         requestShopLicenceFunc.fee(fee)
         requestShopLicenceFunc.musicianName(musicianName)
         requestShopLicenceFunc.name(shopName)
-        requestShopLicenceFunc.sCAddress(SCAgentID)
-        requestShopLicenceFunc.shopHname(Hname)
+        requestShopLicenceFunc.shopHname(hName)
         requestShopLicenceFunc.transfer(wasmclient.Transfer.iotas(1n))
         requestShopLicenceFunc.onLedgerRequest(false)
         let response = await requestShopLicenceFunc.post()
@@ -216,7 +298,12 @@ export class FestivalService {
         acceptShopFunc.onLedgerRequest(false)
         let response = await acceptShopFunc.post();
 
-        return await this.russfestService.waitRequest(response)
+        await this.russfestService.waitRequest(response)
+
+        let errorResult = await this.getErrorMessage(seedKeyPair, response)
+
+        return errorResult;
+
     }
 
     async denyShop(seedKeyPair: SeedKeyPair, shopName: string) {
@@ -275,16 +362,16 @@ export class FestivalService {
                 }
             ]
         };
-
-
+        
+        
         if (shop !== undefined) {
             addMusicianRequest.arguments.push({
                 key: "-shop",
                 value: HName.HashAsNumber(shop)
             });
         }
-
-
+        
+        
         const onLedgerResponse: ISendTransactionResponse = await this.walletService.sendOnLedgerRequest(keyPair, address, env.RUSSFEST_CHAIN_ID, addMusicianRequest)
         */
         return getErrorMessage;
@@ -305,12 +392,15 @@ export class FestivalService {
 
 
     public async getAllOpenShops() {
-        let getAllOpenShopRequest: GetAllOpenShopRequestsView = this.russfestService.getAllOpenShopRequests();
-        let result: GetAllOpenShopRequestsResults = await getAllOpenShopRequest.call();
 
-        // TODO testen 
-        // Eigentlich sollte das ein Array sein???
-        console.log(result.openShopRequest());
+        this.fakeOpenShop();
+
+        /*   let getAllOpenShopRequest: GetAllOpenShopRequestsView = this.russfestService.getAllOpenShopRequests();
+          let result: GetAllOpenShopRequestsResults = await getAllOpenShopRequest.call();
+     
+          // TODO testen 
+          // Eigentlich sollte das ein Array sein???
+          console.log(result.openShopRequest()); */
     }
 
 
@@ -329,7 +419,34 @@ export class FestivalService {
             }
         }
 
-        console.log(resultMap);
         return;
     }
+
+    public async fakeOpenShop(): Promise<Shop[]> {
+        let shopList = [];
+
+        shopList.push(new Shop(
+            "Die Ärzte Shop",
+            "Die Ärzte",
+            25n,
+            "TESTOwner",
+            "TestSCADDRESS",
+            "REQUESTING",
+            12345
+        ).toJson());
+
+        shopList.push(new Shop(
+            "Hannes Wader Shop",
+            "Hannes Wader",
+            25n,
+            "TESTOwner",
+            "TestSCADDRESS",
+            "REQUESTING",
+            12345).toJson())
+
+        return shopList;
+
+    }
 }
+
+
