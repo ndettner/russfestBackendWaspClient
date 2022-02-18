@@ -38,7 +38,44 @@ export class FestivalController {
         this.router.post("/getShopOwnerShops", this.getShopOwnerShops)
         this.router.post("/getShopOwnerRequests", this.getShopOwnerRequests)
         this.router.post("/getShopStatistics", this.getShopStatistics)
+        this.router.post("/getMusiciansWithoutShop", this.getMusiciansWithoutShops)
+        this.router.post("/shopOwnerAddTemplate", this.shopOwnerAddTemplate)
+        this.router.post("/testRequest", this.testRequest)
+        this.router.post("/testSingleString", this.testSingleString)
     }
+
+    public testSingleString = async (req: Request, res: Response) => {
+        try {
+            const response = await this.festivalService.testSingleString();
+            res.status(200).send(response)
+        } catch (error) {
+            res.status(400).send(error)
+
+        }
+
+    }
+
+    public testRequest = async (req: Request, res: Response) => {
+        try {
+            const response = await this.festivalService.testRequest(req.body["shopName"])
+            res.status(200).send(response);
+        } catch (error) {
+            res.status(400).send(error)
+        }
+
+    }
+
+    public shopOwnerAddTemplate = async (req: Request, res: Response) => {
+        try {
+            const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+            const response = await this.festivalService.shopOwnerAddTemplate(seedKeyPair, req.body["shopName"], req.body["musician"], BigInt(req.body["price"]), req.body["productType"])
+            res.status(200).send();
+        } catch (error) {
+            res.status(400).send(error);
+        }
+
+    }
+
 
     public getShopStatistics = async (req: Request, res: Response) => {
         try {
@@ -54,22 +91,7 @@ export class FestivalController {
         }
     }
 
-    public getShopOwnerRequests = async (req: Request, res: Response) => {
-        try {
-            const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
-            const response = await this.festivalService.getShopOwnerRequests(seedKeyPair);
 
-            var json = {
-                openRequests: response[0],
-                deniedRequests: response[1]
-            }
-            res.status(200).send(json)
-        } catch (error) {
-
-        }
-
-
-    }
 
     public getShopOwnerShops = async (req: Request, res: Response) => {
         try {
@@ -77,6 +99,7 @@ export class FestivalController {
             const response = await this.festivalService.getShopOwnerShops(seedKeyPair);
             res.status(200).send(response);
         } catch (error) {
+            console.log(error)
             res.status(400).send("[]");
         }
 
@@ -94,28 +117,29 @@ export class FestivalController {
 
     }
 
-    public getAllOpenShopRequest = async (req: Request, res: Response) => {
-        try {
-            const response = await this.festivalService.fakeOpenShop()
-            res.status(200).send(response);
-        } catch (error) {
-            console.log(error);
-            res.status(400).send("[]");
-        }
-        // const response = await this.festivalService.getAllOpenShops();
 
-    }
 
     public getMerchProducts = async (req: Request, res: Response) => {
-        const response = await this.festivalService.getMerchProducts(req.body["shopName"]);
-        res.status(200).send(response)
+
+        try {
+            const response = await this.festivalService.getMerchProducts(req.body["shopName"]);
+            res.status(200).send(response)
+        } catch (error) {
+            res.status(400).send(error)
+        }
+
 
     }
 
     public getMerchShops = async (req: Request, res: Response) => {
-        const response = await this.festivalService.getMerchShops();
 
-        res.status(200).send(response);
+        try {
+            const response = await this.festivalService.getMerchShops();
+            res.status(200).send(response);
+
+        } catch (error) {
+            res.status(400).send(error)
+        }
     }
 
     public setOwner = async (req: Request, res: Response) => {
@@ -152,46 +176,71 @@ export class FestivalController {
     }
 
     public updateDeniedShopRequest = async (req: Request, res: Response) => {
-        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
-        const response = await this.festivalService.updateDeniedShopRequest(seedKeyPair, req.body["shopName"], req.body["newfee"], req.body["newHname"])
-        res.status(200).send()
+        try {
+            const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+            const response = await this.festivalService.updateDeniedShopRequest(seedKeyPair, req.body["shopName"], req.body["fee"], req.body["hName"])
+
+            if (response === "") {
+                res.status(200).send()
+            } else {
+                res.status(400).send(response)
+            }
+        } catch (error) {
+            res.status(400).send(error);
+        }
+
     }
 
     public cancelShopRequest = async (req: Request, res: Response) => {
-        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
-        const response = await this.festivalService.cancelShopRequest(seedKeyPair, req.body["shopName"])
-        res.status(200).send()
+        try {
+            const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+            const response = await this.festivalService.cancelShopRequest(seedKeyPair, req.body["shopName"])
+
+            if (response === "") {
+                res.status(200).send()
+            } else {
+                res.status(400).send(response)
+            }
+        } catch (error) {
+            res.status(400).send(error);
+        }
+
 
     }
 
     public denyShop = async (req: Request, res: Response) => {
-        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
-        let response = "";
-        // const response = await this.festivalService.denyShop(seedKeyPair, req.body["shopName"])
 
-        if (response === "") {
-            res.status(200).send()
-        } else {
-            res.status(400).send(response)
+        try {
+            const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+            const response = await this.festivalService.denyShop(seedKeyPair, req.body["shopName"])
+
+            if (response === "") {
+                res.status(200).send()
+            } else {
+                res.status(400).send(response)
+            }
+        } catch (error) {
+            res.status(400).send()
         }
+
 
 
     }
 
     public acceptShop = async (req: Request, res: Response) => {
 
-        const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
-        console.log(seedKeyPair);
+        try {
+            const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+            const response = await this.festivalService.acceptShop(seedKeyPair, req.body["shopName"])
 
-        let response = "";
-        // TODO rein damit const response = await this.festivalService.acceptShop(seedKeyPair, req.body["shopName"])
-
-        if (response === "") {
-            res.status(200).send();
-        } else {
-            res.status(400).send(response);
+            if (response === "") {
+                res.status(200).send();
+            } else {
+                res.status(400).send(response);
+            }
+        } catch (error) {
+            res.status(400).send(error)
         }
-
 
     }
 
@@ -207,6 +256,7 @@ export class FestivalController {
                 res.status(400).send(errorMessage);
             }
         } catch (error) {
+            console.log(error);
             res.status(400).send(error);
         }
 
@@ -216,14 +266,22 @@ export class FestivalController {
 
 
     public requestShopLicence = async (req: Request, res: Response) => {
-        console.log(req.body);
         try {
+            console.log(req.body);
+
             const shopName = req.body["shopName"];
             const fee: bigint = BigInt(req.body["fee"]);
             const musicianName = req.body["musicianName"];
             const hName: string = "0x" + req.body["hName"];
             const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"])
-            res.status(200).send()
+            const errorMessage = await this.festivalService.requestShopLicence(seedKeyPair, shopName, fee, musicianName, parseInt(hName));
+
+            if (errorMessage === "") {
+                res.status(200).send()
+            } else {
+                res.status(400).send(errorMessage)
+            }
+
 
         } catch (error) {
             console.log(error);
@@ -234,11 +292,75 @@ export class FestivalController {
 
 
         //await this.festivalService.requestShopLicence(seedKeyPair, shopName, fee, musicianName, parseInt(hName));
-        
+
     }
 
+    //////////////////////////////////// VIEWS ///////////////////////////////////////
+
     public getMusicians = async (req: Request, res: Response) => {
-        const getMusicianViewResult: ParameterResult = await this.festivalService.getMusicians();
+        try {
+            const getMusicianViewResult = await this.festivalService.getMusicians();
+            res.status(200).send(getMusicianViewResult)
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).send(error.toString())
+        }
+    }
+
+
+    public getMusiciansWithoutShops = async (req: Request, res: Response) => {
+        try {
+            const response = await this.festivalService.getMusiciansWithoutShop();
+            res.status(200).send(response);
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).send(error)
+        }
+
+    }
+
+    public getShopOwnerRequests = async (req: Request, res: Response) => {
+        try {
+            const seedKeyPair: SeedKeyPair = this.createSeedKeyPair(req.body["publicKey"], req.body["secretKey"], req.body["seed"]);
+            const response = await this.festivalService.getShopOwnerRequests(seedKeyPair);
+
+
+            let jsonOpenRequests = []
+            response[0].forEach((openRequest) => jsonOpenRequests.push(openRequest.toJson()))
+            let jsonDeniedRequests = []
+            response[1].forEach((deniedRequest) => jsonDeniedRequests.push(deniedRequest.toJson()))
+
+
+            var json = {
+                openRequests: jsonOpenRequests,
+                deniedRequests: jsonDeniedRequests
+            }
+
+            res.status(200).send(json)
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).send(error)
+
+        }
+
+
+    }
+
+    public getAllOpenShopRequest = async (req: Request, res: Response) => {
+        try {
+            const response = await this.festivalService.getAllOpenShops();
+            let jsonResponse = []
+            response.forEach((shop) => jsonResponse.push(shop.toJson()))
+
+            res.status(200).send(jsonResponse);
+        } catch (error) {
+            console.log(error);
+            res.status(400).send("[]");
+        }
+
     }
 
 

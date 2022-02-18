@@ -7,10 +7,10 @@
 
 import * as wasmclient from "../wasmclient"
 import * as events from "./events"
-import {Shop} from "../model/shop";
+import { Musician } from "../model/musician"
+import { Shop } from "../model/shop"
+import { MerchProduct } from "../model/merchProduct"
 
-const ArgNewSCAdress = "NewSCAdress";
-const ArgSCAddress = "SCAddress";
 const ArgFee = "fee";
 const ArgMusician = "musician";
 const ArgMusicianName = "musicianName";
@@ -19,6 +19,7 @@ const ArgNewHname = "newHname";
 const ArgNewOwner = "newOwner";
 const ArgNewfee = "newfee";
 const ArgOwner = "owner";
+const ArgPrice = "price";
 const ArgProduct = "product";
 const ArgProductType = "productType";
 const ArgRequestID = "requestID";
@@ -30,15 +31,26 @@ const ArgShopOwner = "shopOwner";
 const ResScAgentId = "ScAgentId";
 const ResCanProduce = "canProduce";
 const ResDeniedShopRequests = "deniedShopRequests";
+const ResEarnings = "earnings";
 const ResErrorMessage = "errorMessage";
+const ResFestivalEarnings = "festivalEarnings";
+const ResMaxProductionsStep = "maxProductionsStep";
 const ResMessage = "message";
+const ResMusician = "musician";
 const ResMusicians = "musicians";
 const ResMusiciansWithoutShop = "musiciansWithoutShop";
 const ResOpenShopRequest = "openShopRequest";
 const ResOwner = "owner";
+const ResOwnerShops = "ownerShops";
 const ResPingSuccessful = "pingSuccessful";
+const ResProducedProducts = "producedProducts";
+const ResProduction = "production";
+const ResProductionTemplates = "productionTemplates";
 const ResProducts = "products";
+const ResShops = "shops";
+const ResSoldProducts = "soldProducts";
 const ResTestString = "testString";
+const ResSingeString = "singeString";
 const ResTimeslots = "timeslots";
 
 ///////////////////////////// acceptShop /////////////////////////////
@@ -101,8 +113,8 @@ export class BuyMerchFunc extends wasmclient.ClientFunc {
 }
 
 ///////////////////////////// callCheckProduct /////////////////////////////
-
-/* export class CallCheckProductFunc extends wasmclient.ClientFunc {
+/* 
+export class CallCheckProductFunc extends wasmclient.ClientFunc {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
 	public product(v: ): void {
@@ -111,9 +123,9 @@ export class BuyMerchFunc extends wasmclient.ClientFunc {
 	
 	public async post(): Promise<wasmclient.RequestID> {
 		return await super.post(0xdfd91d1f, this.args);
-	} 
-}
-*/
+	}
+} */
+
 export class CallCheckProductResults extends wasmclient.Results {
 
 	canProduce(): boolean {
@@ -206,26 +218,25 @@ export class InitFunc extends wasmclient.ClientFunc {
 
 ///////////////////////////// requestShopLicence /////////////////////////////
 
-
 export class RequestShopLicenceFunc extends wasmclient.ClientFunc {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
-	
-	public fee(v: wasmclient.Int64): void {
-		this.args.set(ArgFee, this.args.fromInt64(v));
+
+	public fee(v: wasmclient.Uint64): void {
+		this.args.set(ArgFee, this.args.fromUint64(v));
 	}
-	
+
 	public musicianName(v: string): void {
 		this.args.set(ArgMusicianName, this.args.fromString(v));
 	}
-	
+
 	public name(v: string): void {
 		this.args.set(ArgName, this.args.fromString(v));
 	}
-	
+
 	public shopHname(v: wasmclient.Hname): void {
 		this.args.set(ArgShopHname, this.args.fromHname(v));
 	}
-	
+
 	public async post(): Promise<wasmclient.RequestID> {
 		this.args.mandatory(ArgFee);
 		this.args.mandatory(ArgMusicianName);
@@ -250,28 +261,102 @@ export class SetOwnerFunc extends wasmclient.ClientFunc {
 	}
 }
 
+///////////////////////////// shopOwnerCreateNewTemplate /////////////////////////////
+
+export class ShopOwnerCreateNewTemplateFunc extends wasmclient.ClientFunc {
+	private args: wasmclient.Arguments = new wasmclient.Arguments();
+
+	public musicianName(v: string): void {
+		this.args.set(ArgMusicianName, this.args.fromString(v));
+	}
+
+	public price(v: wasmclient.Uint64): void {
+		this.args.set(ArgPrice, this.args.fromUint64(v));
+	}
+
+	public productType(v: string): void {
+		this.args.set(ArgProductType, this.args.fromString(v));
+	}
+
+	public shopName(v: string): void {
+		this.args.set(ArgShopName, this.args.fromString(v));
+	}
+
+	public async post(): Promise<wasmclient.RequestID> {
+		this.args.mandatory(ArgMusicianName);
+		this.args.mandatory(ArgPrice);
+		this.args.mandatory(ArgProductType);
+		this.args.mandatory(ArgShopName);
+		return await super.post(0xbd5b4729, this.args);
+	}
+}
+
 ///////////////////////////// updateDeniedShopRequest /////////////////////////////
 
 export class UpdateDeniedShopRequestFunc extends wasmclient.ClientFunc {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
-	
+
 	public newHname(v: wasmclient.Hname): void {
 		this.args.set(ArgNewHname, this.args.fromHname(v));
 	}
-	
-	public newfee(v: wasmclient.Int64): void {
-		this.args.set(ArgNewfee, this.args.fromInt64(v));
+
+	public newfee(v: wasmclient.Uint64): void {
+		this.args.set(ArgNewfee, this.args.fromUint64(v));
 	}
-	
+
 	public shopName(v: string): void {
 		this.args.set(ArgShopName, this.args.fromString(v));
 	}
-	
+
 	public async post(): Promise<wasmclient.RequestID> {
 		this.args.mandatory(ArgShopName);
 		return await super.post(0xa7c5088c, this.args);
 	}
 }
+/* 
+///////////////////////////// callGetShopStatistics /////////////////////////////
+
+export class CallGetShopStatisticsView extends wasmclient.ClientView {
+	private args: wasmclient.Arguments = new wasmclient.Arguments();
+	
+	public shopName(v: string): void {
+		this.args.set(ArgShopName, this.args.fromString(v));
+	}
+
+	public async call(): Promise<CallGetShopStatisticsResults> {
+		this.args.mandatory(ArgShopName);
+		const res = new CallGetShopStatisticsResults();
+		await this.callView("callGetShopStatistics", this.args, res);
+		return res;
+	}
+}
+
+export class CallGetShopStatisticsResults extends wasmclient.Results {
+
+	earnings(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResEarnings));
+	}
+
+	maxProductionsStep(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResMaxProductionsStep));
+	}
+
+	producedProducts(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResProducedProducts));
+	}
+
+	production(): StatisticProduct {
+		return StatisticProduct.fromBytes(this.get(ResProduction));
+	}
+
+	productionTemplates(): ProductTemplate {
+		return ProductTemplate.fromBytes(this.get(ResProductionTemplates));
+	}
+
+	soldProducts(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResSoldProducts));
+	}
+} */
 
 ///////////////////////////// getAgendID /////////////////////////////
 
@@ -304,34 +389,51 @@ export class GetAllOpenShopRequestsView extends wasmclient.ClientView {
 
 export class GetAllOpenShopRequestsResults extends wasmclient.Results {
 
-	openShopRequest(): Shop {
-		return Shop.fromBytes(this.get(ResOpenShopRequest));
+	openShopRequest(): Shop[] {
+		const res: Shop[] = [];
+		this.forEach((key, val) => {
+			let musician = Shop.fromBytes(val);
+			if (musician !== undefined) {
+				res.push(musician)
+			}
+
+		})
+		return res
 	}
 }
 
-///////////////////////////// getAllProducts /////////////////////////////
 
-/* export class GetAllProductsView extends wasmclient.ClientView {
 
-	public async call(): Promise<GetAllProductsResults> {
-		const res = new GetAllProductsResults();
-		await this.callView("getAllProducts", null, res);
+///////////////////////////// getAllRegisteredShops /////////////////////////////
+
+export class GetAllRegisteredShopsView extends wasmclient.ClientView {
+
+	public async call(): Promise<GetAllRegisteredShopsResults> {
+		const res = new GetAllRegisteredShopsResults();
+		await this.callView("getAllRegisteredShops", null, res);
 		return res;
 	}
 }
 
-export class GetAllProductsResults extends wasmclient.Results {
+export class GetAllRegisteredShopsResults extends wasmclient.Results {
 
-	products(): Product {
-		return Product.fromBytes(this.get(ResProducts));
+	shops(): Shop[] {
+		const res: Shop[] = [];
+		this.forEach((key, val) => {
+			let shop = Shop.fromBytes(val);
+			if (shop !== undefined) {
+				res.push(shop)
+			}
+		})
+		return res
 	}
-} */
+}
 
 ///////////////////////////// getDeniedShopRequests /////////////////////////////
 
-/* export class GetDeniedShopRequestsView extends wasmclient.ClientView {
+export class GetDeniedShopRequestsView extends wasmclient.ClientView {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
-	
+
 	public shopOwner(v: wasmclient.AgentID): void {
 		this.args.set(ArgShopOwner, this.args.fromAgentID(v));
 	}
@@ -346,11 +448,19 @@ export class GetAllProductsResults extends wasmclient.Results {
 
 export class GetDeniedShopRequestsResults extends wasmclient.Results {
 
-	deniedShopRequests(): Shop {
-		return Shop.fromBytes(this.get(ResDeniedShopRequests));
+	deniedShopRequests(): Shop[] {
+		const res: Shop[] = [];
+		this.forEach((key, val) => {
+			let shop = Shop.fromBytes(val);
+			if (shop !== undefined) {
+				res.push(shop)
+			}
+
+		})
+		return res
 	}
 }
- */
+
 ///////////////////////////// getErrorMessagesView /////////////////////////////
 
 export class GetErrorMessagesViewView extends wasmclient.ClientView {
@@ -375,9 +485,27 @@ export class GetErrorMessagesViewResults extends wasmclient.Results {
 	}
 }
 
+///////////////////////////// getFestivalEarnings /////////////////////////////
+
+export class GetFestivalEarningsView extends wasmclient.ClientView {
+
+	public async call(): Promise<GetFestivalEarningsResults> {
+		const res = new GetFestivalEarningsResults();
+		await this.callView("getFestivalEarnings", null, res);
+		return res;
+	}
+}
+
+export class GetFestivalEarningsResults extends wasmclient.Results {
+
+	festivalEarnings(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResFestivalEarnings));
+	}
+}
+
 ///////////////////////////// getMusicians /////////////////////////////
 
-/* export class GetMusiciansView extends wasmclient.ClientView {
+export class GetMusiciansView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetMusiciansResults> {
 		const res = new GetMusiciansResults();
@@ -388,13 +516,21 @@ export class GetErrorMessagesViewResults extends wasmclient.Results {
 
 export class GetMusiciansResults extends wasmclient.Results {
 
-	musicians(): Musician {
-		return Musician.fromBytes(this.get(ResMusicians));
+	musicians(): Musician[] {
+		const res: Musician[] = [];
+		this.forEach((key, val) => {
+			let musician = Musician.fromBytes(val);
+			if (musician !== undefined) {
+				res.push(musician)
+			}
+
+		})
+		return res
 	}
-} */
+}
 
 ///////////////////////////// getMusiciansWithoutShop /////////////////////////////
-/* 
+
 export class GetMusiciansWithoutShopView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetMusiciansWithoutShopResults> {
@@ -406,16 +542,24 @@ export class GetMusiciansWithoutShopView extends wasmclient.ClientView {
 
 export class GetMusiciansWithoutShopResults extends wasmclient.Results {
 
-	musiciansWithoutShop(): Musician {
-		return Musician.fromBytes(this.get(ResMusiciansWithoutShop));
+	musiciansWithoutShop(): Musician[] {
+		const res: Musician[] = [];
+		this.forEach((key, val) => {
+			let musician = Musician.fromBytes(val);
+			if (musician !== undefined) {
+				res.push(musician)
+			}
+
+		})
+		return res
 	}
 }
- */
+
 ///////////////////////////// getOpenShopRequest /////////////////////////////
 
-/* export class GetOpenShopRequestView extends wasmclient.ClientView {
+export class GetOpenShopRequestView extends wasmclient.ClientView {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
-	
+
 	public shopOwner(v: wasmclient.AgentID): void {
 		this.args.set(ArgShopOwner, this.args.fromAgentID(v));
 	}
@@ -430,11 +574,19 @@ export class GetMusiciansWithoutShopResults extends wasmclient.Results {
 
 export class GetOpenShopRequestResults extends wasmclient.Results {
 
-	openShopRequest(): Shop {
-		return Shop.fromBytes(this.get(ResOpenShopRequest));
+	openShopRequest(): Shop[] {
+		const res: Shop[] = []
+		this.forEach((key, val) => {
+			let shop = Shop.fromBytes(val);
+			if (shop !== undefined) {
+				res.push(shop)
+
+			}
+		})
+		return res
 	}
 }
- */
+
 ///////////////////////////// getOwner /////////////////////////////
 
 export class GetOwnerView extends wasmclient.ClientView {
@@ -453,17 +605,98 @@ export class GetOwnerResults extends wasmclient.Results {
 	}
 }
 
-///////////////////////////// getSpecificProducts /////////////////////////////
+///////////////////////////// getRegisteredShopsFromOwner /////////////////////////////
 
-/* export class GetSpecificProductsView extends wasmclient.ClientView {
+export class GetRegisteredShopsFromOwnerView extends wasmclient.ClientView {
+	private args: wasmclient.Arguments = new wasmclient.Arguments();
+
+	public shopOwner(v: wasmclient.AgentID): void {
+		this.args.set(ArgShopOwner, this.args.fromAgentID(v));
+	}
+
+	public async call(): Promise<GetRegisteredShopsFromOwnerResults> {
+		this.args.mandatory(ArgShopOwner);
+		const res = new GetRegisteredShopsFromOwnerResults();
+		await this.callView("getRegisteredShopsFromOwner", this.args, res);
+		return res;
+	}
+}
+
+export class GetRegisteredShopsFromOwnerResults extends wasmclient.Results {
+
+	ownerShops(): Shop[] {
+
+		const res: Shop[] = []
+		this.forEach((key, val) => {
+			let shop = Shop.fromBytes(val);
+			if (shop !== undefined) {
+				res.push(shop)
+
+			}
+		})
+		return res
+	}
+}
+/* 
+///////////////////////////// getShopStatistics /////////////////////////////
+
+export class GetShopStatisticsView extends wasmclient.ClientView {
 	private args: wasmclient.Arguments = new wasmclient.Arguments();
 	
-	public musician(v: string): void {
-		this.args.set(ArgMusician, this.args.fromString(v));
+	public shopName(v: string): void {
+		this.args.set(ArgShopName, this.args.fromString(v));
+	}
+
+	public async call(): Promise<GetShopStatisticsResults> {
+		this.args.mandatory(ArgShopName);
+		const res = new GetShopStatisticsResults();
+		await this.callView("getShopStatistics", this.args, res);
+		return res;
+	}
+}
+
+export class GetShopStatisticsResults extends wasmclient.Results {
+
+	earnings(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResEarnings));
+	}
+
+	maxProductionsStep(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResMaxProductionsStep));
+	}
+
+	musician(): string {
+		return this.toString(this.get(ResMusician));
+	}
+
+	producedProducts(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResProducedProducts));
+	}
+
+	production(): StatisticProduct {
+		return StatisticProduct.fromBytes(this.get(ResProduction));
+	}
+
+	productionTemplates(): ProductTemplate {
+		return ProductTemplate.fromBytes(this.get(ResProductionTemplates));
+	}
+
+	soldProducts(): wasmclient.Uint64 {
+		return this.toUint64(this.get(ResSoldProducts));
+	}
+}
+*/
+
+
+export class GetSpecificProductsView extends wasmclient.ClientView {
+	private args: wasmclient.Arguments = new wasmclient.Arguments();
+
+	public shopName(v: string): void {
+		this.args.set(ArgShopName, this.args.fromString(v));
 	}
 
 	public async call(): Promise<GetSpecificProductsResults> {
-		this.args.mandatory(ArgMusician);
+		this.args.mandatory(ArgShopName);
 		const res = new GetSpecificProductsResults();
 		await this.callView("getSpecificProducts", this.args, res);
 		return res;
@@ -472,14 +705,22 @@ export class GetOwnerResults extends wasmclient.Results {
 
 export class GetSpecificProductsResults extends wasmclient.Results {
 
-	products(): Product {
-		return Product.fromBytes(this.get(ResProducts));
+	products(): MerchProduct[] {
+		const res: MerchProduct[] = []
+		this.forEach((key, val) => {
+			let merchProduct = MerchProduct.fromBytes(val)
+			if (merchProduct !== undefined) {
+				res.push(merchProduct)
+			}
+		})
+
+		return res
 	}
 }
- */
+/*
 ///////////////////////////// getTimeslots /////////////////////////////
 
-/* export class GetTimeslotsView extends wasmclient.ClientView {
+export class GetTimeslotsView extends wasmclient.ClientView {
 
 	public async call(): Promise<GetTimeslotsResults> {
 		const res = new GetTimeslotsResults();
@@ -508,8 +749,30 @@ export class TestViewView extends wasmclient.ClientView {
 
 export class TestViewResults extends wasmclient.Results {
 
-	testString(): string {
-		return this.toString(this.get(ResTestString));
+	testString(): string[] {
+		const res = [];
+		this.forEach((key, val) => {
+			res.push(this.toString(val))
+		})
+		return res;
+	}
+}
+
+///////////////////////////// testViewSingle /////////////////////////////
+
+export class TestViewSingleView extends wasmclient.ClientView {
+
+	public async call(): Promise<TestViewSingleResults> {
+		const res = new TestViewSingleResults();
+		await this.callView("testViewSingle", null, res);
+		return res;
+	}
+}
+
+export class TestViewSingleResults extends wasmclient.Results {
+
+	singeString(): string {
+		return this.toString(this.get(ResSingeString));
 	}
 }
 
@@ -535,12 +798,12 @@ export class RussfestService extends wasmclient.Service {
 
 	public buyMerch(): BuyMerchFunc {
 		return new BuyMerchFunc(this);
-	}
+	}/* 
 
-	/* 	public callCheckProduct(): CallCheckProductFunc {
-			return new CallCheckProductFunc(this);
-		}
-	 */
+	public callCheckProduct(): CallCheckProductFunc {
+		return new CallCheckProductFunc(this);
+	} */
+
 	public callPayStore(): CallPayStoreFunc {
 		return new CallPayStoreFunc(this);
 	}
@@ -569,9 +832,17 @@ export class RussfestService extends wasmclient.Service {
 		return new SetOwnerFunc(this);
 	}
 
+	public shopOwnerCreateNewTemplate(): ShopOwnerCreateNewTemplateFunc {
+		return new ShopOwnerCreateNewTemplateFunc(this);
+	}
+
 	public updateDeniedShopRequest(): UpdateDeniedShopRequestFunc {
 		return new UpdateDeniedShopRequestFunc(this);
 	}
+	/* 
+		public callGetShopStatistics(): CallGetShopStatisticsView {
+			return new CallGetShopStatisticsView(this);
+		} */
 
 	public getAgendID(): GetAgendIDView {
 		return new GetAgendIDView(this);
@@ -580,44 +851,59 @@ export class RussfestService extends wasmclient.Service {
 	public getAllOpenShopRequests(): GetAllOpenShopRequestsView {
 		return new GetAllOpenShopRequestsView(this);
 	}
-	/* 
-		public getAllProducts(): GetAllProductsView {
-			return new GetAllProductsView(this);
-		}
-	
-		public getDeniedShopRequests(): GetDeniedShopRequestsView {
-			return new GetDeniedShopRequestsView(this);
-		}
-	 */
+
+	public getAllRegisteredShops(): GetAllRegisteredShopsView {
+		return new GetAllRegisteredShopsView(this);
+	}
+	public getDeniedShopRequests(): GetDeniedShopRequestsView {
+		return new GetDeniedShopRequestsView(this);
+	}
+
 	public getErrorMessagesView(): GetErrorMessagesViewView {
 		return new GetErrorMessagesViewView(this);
 	}
 
-	/* 	public getMusicians(): GetMusiciansView {
-			return new GetMusiciansView(this);
-		}
-	
-		public getMusiciansWithoutShop(): GetMusiciansWithoutShopView {
-			return new GetMusiciansWithoutShopView(this);
-		}
-	
-		public getOpenShopRequest(): GetOpenShopRequestView {
-			return new GetOpenShopRequestView(this);
-		} */
+	public getFestivalEarnings(): GetFestivalEarningsView {
+		return new GetFestivalEarningsView(this);
+	}
+
+	public getMusicians(): GetMusiciansView {
+		return new GetMusiciansView(this);
+	}
+
+	public getMusiciansWithoutShop(): GetMusiciansWithoutShopView {
+		return new GetMusiciansWithoutShopView(this);
+	}
+
+	public getOpenShopRequest(): GetOpenShopRequestView {
+		return new GetOpenShopRequestView(this);
+	}
 
 	public getOwner(): GetOwnerView {
 		return new GetOwnerView(this);
 	}
-	/* 
-		public getSpecificProducts(): GetSpecificProductsView {
-			return new GetSpecificProductsView(this);
-		}
-	
-		public getTimeslots(): GetTimeslotsView {
-			return new GetTimeslotsView(this);
+
+	public getRegisteredShopsFromOwner(): GetRegisteredShopsFromOwnerView {
+		return new GetRegisteredShopsFromOwnerView(this);
+	}
+	/*
+		public getShopStatistics(): GetShopStatisticsView {
+			return new GetShopStatisticsView(this);
 		}
 	 */
+	public getSpecificProducts(): GetSpecificProductsView {
+		return new GetSpecificProductsView(this);
+	}
+
+	/* 	public getTimeslots(): GetTimeslotsView {
+			return new GetTimeslotsView(this);
+		} */
+
 	public testView(): TestViewView {
 		return new TestViewView(this);
+	}
+
+	public testViewSingle(): TestViewSingleView {
+		return new TestViewSingleView(this);
 	}
 }

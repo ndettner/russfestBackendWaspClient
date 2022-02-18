@@ -3,18 +3,22 @@ import internal from "stream";
 
 export class ShopStatistics {
     public shopName: string;
+    public musician: string
     public earnings: number;
     public producedProducts: number;
     public soldProducts: number;
+    public maxProductionSteps: number;
 
     public productTemplates: StatisticsProductTemplate[];
     public production: Map<number, StatisticsProduct[]>;
 
-    constructor(shopName: string, earnings: number, producedProducts: number, soldProducts: number, productTemplates: StatisticsProductTemplate[], production: StatisticsProduct[]) {
+    constructor(shopName: string, musician: string, earnings: number, producedProducts: number, soldProducts: number, maxProductionSteps: number, productTemplates: StatisticsProductTemplate[], production: StatisticsProduct[]) {
         this.shopName = shopName;
+        this.musician = musician;
         this.earnings = earnings;
         this.producedProducts = producedProducts;
         this.soldProducts = soldProducts;
+        this.maxProductionSteps = maxProductionSteps;
         this.productTemplates = productTemplates;
         this.production = new Map();
         for (let product of production) {
@@ -43,8 +47,10 @@ export class ShopStatistics {
 
         let _json = {
             shopName: this.shopName,
+            musician: this.musician,
             earnings: this.earnings,
             producedProducts: this.producedProducts,
+            maxProductionSteps: this.maxProductionSteps,
             soldProducts: this.soldProducts,
             productTemplates: this.productTemplates,
             production: productionsJson,

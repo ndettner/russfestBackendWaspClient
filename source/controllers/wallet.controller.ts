@@ -6,11 +6,12 @@ import * as wasmclient from "../wasmclient"
 import { ServiceClient } from "../wasmclient";
 import { env } from "process";
 import { getAgentId, Base58, IKeyPair, } from "../wasmclient/crypto";
+import { Colors } from "../wasp_client";
 
 export class WalletController {
     public router: Router;
-    private walletService: WalletService;
     private walletServiceClient: wasmclient.ServiceClient;
+    private walletService: WalletService;
 
     constructor() {
         this.walletService = new WalletService();
@@ -34,12 +35,12 @@ export class WalletController {
     }
 
     public requestFunds = async (req: Request, res: Response) => {
-        const faucetRequestResponse: IFaucetResponse = await this.walletService.requestFaucetFunds(req.body["address"]);
-        if (faucetRequestResponse.error == null) {
+        const result: boolean = await this.walletServiceClient.goShimmerClient.requestFunds(req.body["address"]);
+        if (result) {
             let balance = await this.walletServiceClient.goShimmerClient.getIOTABalance(req.body["address"]);
             return res.status(200).send(balance.toString());
         } else {
-            res.status(403).send(faucetRequestResponse.error);
+            res.status(400).send(result);
         }
 
     }
@@ -51,10 +52,25 @@ export class WalletController {
         const keyPair: IKeyPair = this.walletService.generateKeyPair(walletSeed, userID)
         const agentID: wasmclient.AgentID = getAgentId(keyPair);
 
-        const faucetRequestResult: IFaucetResponse = await this.walletService.requestFaucetFunds(address);
 
-        this.walletServiceClient.configuration.seed = walletSeed;
-        this.walletServiceClient.goShimmerClient.depositIOTAToAccountInChain(keyPair, agentID, 1n);
+        const faucetRequestResult: IFaucetResponse = await this.walletService.requestFaucetFunds(address);
+        const result = await this.walletServiceClient.goShimmerClient.requestFunds(address) 
+        
+
+        if (faucetRequestResult.error == null) {
+            console.log(faucetRequestResult.error);
+
+            let bigbalance = await this.walletServiceClient.goShimmerClient.getIOTABalance(address)
+            console.log(bigbalance)
+        } else {
+
+            console.log(faucetRequestResult.error);
+        }
+
+
+
+        //this.walletServiceClient.configuration.seed = walletSeed;
+        //this.walletServiceClient.goShimmerClient.depositIOTAToAccountInChain(keyPair, agentID, 1n);
 
 
         let returnJSON = {
@@ -62,7 +78,7 @@ export class WalletController {
             "address": address,
             "publicKey": Base58.encode(keyPair.publicKey),
             "secretKey": Base58.encode(keyPair.secretKey),
-            "agendID": agentID
+            "agendID": agentID,
         };
         res.json(returnJSON)
     }
@@ -77,10 +93,11 @@ export class WalletController {
             res.send("Your Key is not valid")
         }
     }
+
     public balance = async (req: Request, res: Response) => {
-        this.walletServiceClient.configuration.seed = Base58.decode(req.body["seed"]);
+       // this.walletServiceClient.configuration.seed = Base58.decode(req.body["seed"]);
         const address = req.body["address"];
-        let balance = await this.walletServiceClient.goShimmerClient.getIOTABalance(req.body["address"])
+        let balance = await this.walletServiceClient.goShimmerClient.getIOTABalance(address)
         res.send(balance.toString());
     }
 }

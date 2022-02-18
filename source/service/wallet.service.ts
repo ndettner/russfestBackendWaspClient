@@ -1,9 +1,8 @@
 import { Base58, BasicClient, BasicWallet, CallViewResponse, Faucet, IAllowedManaPledgeResponse, IExtendedResponse, IFaucetRequest, IFaucetRequestContext, IKeyPair, IOnLedger, IResponse, ISendTransactionResponse, ITransaction, OnLedger, Seed, Transaction } from "../wasp_client";
 import { WaspHelpers } from "../wasp_client_helper";
-import { Buffer } from "../wasp_client/buffer"
+import { Buffer } from "../wasmclient/buffer"
 import ProofOfWork from "../wasp_client/proof_of_work";
-import { env } from "process";
-import { IFaucetResponse } from "../wasmclient/goshimmer/faucet/faucet_models";
+
 
 export class WalletService {
     private waspHelpers: WaspHelpers;
@@ -62,7 +61,9 @@ export class WalletService {
         try {
             return await this.basicClient.sendFaucetRequest(faucetRequestResult.faucetRequest);
 
-        } catch {
+        } catch (e) {
+            console.log(e);
+
         }
 
 
